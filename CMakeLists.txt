@@ -9,3 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 add_subdirectory(src)
+
+# tests/ は Pico SDK に依存しないホスト側ビルド用なので
+# add_subdirectory(tests) はしない。
+# テストは別途 `cmake -S tests -B build-tests` で独立ビルドする。
