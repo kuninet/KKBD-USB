@@ -14,8 +14,12 @@
  * Phase 4 実装範囲（追加）:
  *   - tuh_hid_report_received_cb() でのレポート解析・差分検出・keymap変換・UART送信
  *
- * 将来対応 (Phase 5〜):
- *   - Shift/Ctrl 修飾キーの解釈（keymap.c 拡張）
+ * Phase 5 実装範囲（追加・keymap.c 側）:
+ *   - keymap.c がテーブル方式（normal/shift/ctrl）にリライトされ、
+ *     Shift/Ctrl 修飾キー、特殊キー（Esc/Tab/Space/BS）、記号キー、Keypad 数字を完全対応
+ *   - usb_host.c は変更なし（既存の keymap_convert(usage, modifier) 呼び出しで自動対応）
+ *
+ * 将来対応 (Phase 6〜):
  *   - キーリピート登録 (keyrepeat_register)
  *   - LED_STATE_TX による送信可視化
  *
