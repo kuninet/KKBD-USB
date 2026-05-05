@@ -4,8 +4,9 @@ project(kkbd_usb_tests C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# Phase 4 keymap テストの有効化フラグ（OFF のままでもビルドが通ること）
-option(KKBD_PHASE4_DONE "Enable Phase 4 keymap tests" OFF)
+# Phase フラグ（OFF のままでもビルドが通ること）
+option(KKBD_PHASE4_DONE "Enable Phase 4 (keymap basic keys/Enter) tests" OFF)
+option(KKBD_PHASE5_DONE "Enable Phase 5 (keymap Shift/Ctrl/special keys) tests" OFF)
 
 # 警告を厳しく
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -14,6 +15,9 @@ endif()
 
 if(KKBD_PHASE4_DONE)
     add_compile_definitions(KKBD_PHASE4_DONE)
+endif()
+if(KKBD_PHASE5_DONE)
+    add_compile_definitions(KKBD_PHASE5_DONE)
 endif()
 
 enable_testing()
@@ -27,9 +31,11 @@ target_include_directories(test_keymap PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../src
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
-# Phase 4 向けにコメントアウトされたテスト関数の警告を抑制（test_keymap のみ）
-# Phase 4 完了後、test_keymap.c の RUN_TEST 有効化に合わせて本オプションは削除する
-target_compile_options(test_keymap PRIVATE -Wno-unused-function)
+# Phase 5 完全有効化までは Phase 5 用テスト関数が unused-function になるため警告を抑制
+# Phase 5 完了後（KKBD_PHASE5_DONE=ON 時）は全テスト関数が使用されるため抑制不要
+if(NOT KKBD_PHASE5_DONE)
+    target_compile_options(test_keymap PRIVATE -Wno-unused-function)
+endif()
 add_test(NAME test_keymap COMMAND test_keymap)
 
 # config テスト

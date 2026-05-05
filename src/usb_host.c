@@ -11,10 +11,13 @@
  *   - 切断時に keyrepeat_cancel() を呼び、リピートをキャンセル
  *   - tuh_hid_report_received_cb() は受信チェーン継続のみ（レポート解析は Phase 4）
  *
- * 将来対応 (Phase 4〜):
- *   - tuh_hid_report_received_cb() でのキーダウン/キーアップ検出・変換・UART送信
- *   - キーリピート登録 (keyrepeat_register / keyrepeat_cancel)
- *   - s_prev_report[] を用いた前回レポートとの差分検出
+ * Phase 4 実装範囲（追加）:
+ *   - tuh_hid_report_received_cb() でのレポート解析・差分検出・keymap変換・UART送信
+ *
+ * 将来対応 (Phase 5〜):
+ *   - Shift/Ctrl 修飾キーの解釈（keymap.c 拡張）
+ *   - キーリピート登録 (keyrepeat_register)
+ *   - LED_STATE_TX による送信可視化
  *
  * 異常系 (Phase 7):
  *   - 過電流・通信エラーリカバリ・複数キーボード対応
@@ -27,17 +30,21 @@
 #include "uart_out.h"
 #include "led.h"
 #include "keyrepeat.h"
+#include "keymap.h"
 #include "tusb.h"
 
 #include <stdio.h>
 #include <string.h>
+
+/* HID Boot Keyboard レポートサイズ（仕様固定 8 バイト） */
+#define BOOT_KB_REPORT_SIZE 8
 
 /* ---- 内部状態 ---- */
 
 static bool    s_keyboard_mounted = false;
 static uint8_t s_kb_dev_addr      = 0;
 static uint8_t s_kb_instance      = 0;
-static uint8_t s_prev_report[8]   = {0}; /* 前回 HID レポート（Phase 4 で使用） */
+static uint8_t s_prev_report[BOOT_KB_REPORT_SIZE] = {0}; /* 前回 HID レポート（Phase 4 で使用） */
 
 /* ---- 公開 API ---- */
 
@@ -120,7 +127,7 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance,
     s_keyboard_mounted = true;
     s_kb_dev_addr      = dev_addr;
     s_kb_instance      = instance;
-    memset(s_prev_report, 0, sizeof(s_prev_report)); /* 前回レポートをリセット */
+    memset(s_prev_report, 0, BOOT_KB_REPORT_SIZE); /* 前回レポートをリセット */
 
     char buf[80];
     snprintf(buf, sizeof(buf),
@@ -158,7 +165,7 @@ void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance) {
     s_keyboard_mounted = false;
     s_kb_dev_addr      = 0;
     s_kb_instance      = 0;
-    memset(s_prev_report, 0, sizeof(s_prev_report));
+    memset(s_prev_report, 0, BOOT_KB_REPORT_SIZE);
 
     uart_out_puts("[USB] Keyboard disconnected\r\n");
 
@@ -169,25 +176,79 @@ void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance) {
 }
 
 /**
- * @brief HIDレポート受信コールバック
+ * @brief HIDレポート受信コールバック（Phase 4 実装）
  *
- * Phase 3 では受信チェーンを継続するためのみ機能させる。
- * レポート内容の解析（キーダウン/キーアップ検出・keymap変換・UART送信・keyrepeat登録）
- * は Phase 4 で実装する。
+ * HID Boot Keyboard レポート（8 バイト固定）を解析し、新たに押されたキー
+ * （前回レポートに存在しなかった Usage ID）を keymap で ASCII に変換し
+ * UART に送信する。Enter キーはジャンパー設定の行末コードを送信する。
  *
- * 受信チェーン: このコールバック内で tuh_hid_receive_report() を再呼び出しすることで
- * 次のレポートの受信を要求し続ける。
+ * Boot Protocol レポート形式:
+ *   Byte 0    : Modifier byte（Phase 5 で Shift/Ctrl 解釈に使用）
+ *   Byte 1    : Reserved（無視）
+ *   Byte 2-7  : 同時押し最大 6 キーの HID Usage ID
+ *
+ * 差分検出:
+ *   現在レポートのキースロットを走査し、前回レポートに存在しなかった
+ *   Usage ID のみ「キーダウン」イベントとして処理する。
+ *   これにより同じキーを押し続けても 1 文字のみ送信される。
+ *
+ * Phase 6 で追加予定:
+ *   - keyrepeat_register() でリピート対象キーを登録
+ *   - led_set_state(LED_STATE_TX) で送信時の LED 短時間点滅
  *
  * @param dev_addr  デバイスアドレス
  * @param instance  HID インスタンス番号
- * @param report    受信レポートデータ（Phase 4 で使用）
- * @param len       受信レポート長（Phase 4 で使用）
+ * @param report    受信レポートデータ（Boot Keyboard: 8 バイト）
+ * @param len       受信レポート長（Boot Keyboard: 8）
  */
 void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance,
                                  uint8_t const *report, uint16_t len) {
-    /* Phase 4 実装予定: レポート解析・キーダウン検出・keymap変換・UART送信・keyrepeat登録 */
-    (void)report;
-    (void)len;
+    if (len >= BOOT_KB_REPORT_SIZE && report != NULL) {
+        uint8_t const modifier = report[0];
+
+        /* Byte 2-7 のキースロットを走査し、新たに押されたキーのみ処理 */
+        for (int i = 2; i < BOOT_KB_REPORT_SIZE; i++) {
+            uint8_t const usage = report[i];
+            if (usage == 0) {
+                continue; /* 空スロット */
+            }
+            /* HID Boot Keyboard の Phantom/Error 状態（0x01: ErrorRollOver, 0x02: POSTFail,
+             * 0x03: ErrorUndefined）はキー入力ではないためスキップ。
+             * 6キー超過時に Byte 2-7 が 0x01 で埋まる仕様への対応。 */
+            if (usage <= 0x03) {
+                continue;
+            }
+
+            /* 前回レポートに同じ usage が含まれていれば押しっぱなし → 無視 */
+            bool was_pressed = false;
+            for (int j = 2; j < BOOT_KB_REPORT_SIZE; j++) {
+                if (s_prev_report[j] == usage) {
+                    was_pressed = true;
+                    break;
+                }
+            }
+            if (was_pressed) {
+                continue;
+            }
+
+            /* キーダウンイベント */
+            if (keymap_is_enter(usage)) {
+                uart_out_send_line_ending();
+            } else {
+                uint8_t const ascii = keymap_convert(usage, modifier);
+                if (ascii != 0) {
+                    uart_out_putc(ascii);
+                }
+                /* TODO (Phase 6): keyrepeat_register(ascii) を呼び、キーリピート登録 */
+                /* TODO (Phase 6): led_set_state(LED_STATE_TX) で送信時の LED 短時間点滅 */
+            }
+        }
+
+        /* 現在レポートを保存（次回の差分検出に使用） */
+        memcpy(s_prev_report, report, BOOT_KB_REPORT_SIZE);
+    }
+    /* len < BOOT_KB_REPORT_SIZE または report == NULL の場合: Boot Protocol 想定外サイズ。
+     * レポート保存は行わず受信チェーンだけ継続する。 */
 
     /* 受信チェーン継続: 次のレポート受信を要求 */
     if (!tuh_hid_receive_report(dev_addr, instance)) {
