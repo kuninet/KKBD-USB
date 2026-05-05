@@ -1,0 +1,230 @@
+# Phase 1 実機検証手順書
+
+| 項目 | 内容 |
+|------|------|
+| 文書番号 | KKBD-USB-VERIF-PHASE1-001 |
+| 作成日 | 2026-05-05 |
+| 対応 Issue | #9 (Phase 1: ビルド環境構築) |
+| 対応 Phase | Phase 1 |
+| 対象 FR/NFR | NFR-001, FR-010（部分・LED初期表示） |
+
+---
+
+## 1. はじめに
+
+### 目的
+
+本手順書は Phase 1 完了の判定として、Pico SDK ビルド環境が正常に動作し、生成した `.uf2` ファイルを Raspberry Pi Pico に書き込んだ後、Pico の内蔵 LED が点滅することを確認するための手順を定める。
+
+### 検証対象
+
+- PR マージ前: `feature/9-phase1-build-led` ブランチ
+- PR マージ後: `main` ブランチでそのまま検証可能
+
+**注**: 設計書（FR-010）の `LED_STATE_BOOT` の最終仕様は「常時点灯」だが、Phase 1 では Lチカで Pico SDK ビルド・書き込みパスの動作確認を兼ねるため、暫定的に 500ms 周期の点滅としている。Phase 6 で本来仕様（常時点灯）に置換予定。
+
+---
+
+## 2. 前提条件
+
+### 必要ハードウェア
+
+| ハードウェア | 数量 | 備考 |
+|-------------|------|------|
+| Raspberry Pi Pico（無印、RP2040 搭載モデル） | 1 | Pico W は LED の接続先が異なるため注意 |
+| USB Micro-B ケーブル | 1 | PC との接続用。充電専用ではなくデータ通信対応のもの |
+| 開発用 PC | 1 | macOS / Linux / Windows |
+
+### 必要ソフトウェア
+
+| ソフトウェア | バージョン | 備考 |
+|------------|-----------|------|
+| Pico SDK | v1.5.1 以上 | 環境変数 `PICO_SDK_PATH` が設定済みであること |
+| `arm-none-eabi-gcc` | 10 以上 | ARM クロスコンパイラ |
+| `cmake` | 3.13 以上 | ビルドシステム生成ツール |
+| `ninja` | 最新安定版 | 推奨（`make` でも可） |
+| `git` | 2.x 以上 | リポジトリ取得用 |
+
+各ツールのインストール方法は [`README.md`](../../README.md) の「開発環境」セクションを参照。
+
+### 任意ツール
+
+| ツール | 用途 |
+|--------|------|
+| `picotool` | 書き込み・ファームウェア情報取得用（ドラッグ＆ドロップで書き込む場合は不要） |
+| ストップウォッチ | 点滅周期の計測用（目視確認でも合否判定は可能） |
+| オシロスコープ / ロジックアナライザ | 点滅周期の精密計測用（任意） |
+
+---
+
+## 3. 検証手順
+
+### Step 1: リポジトリ取得とブランチ切替
+
+```sh
+git clone https://github.com/kuninet/KKBD-USB.git
+cd KKBD-USB
+
+# PRマージ前のみ：feature ブランチをチェックアウト
+# git checkout feature/9-phase1-build-led
+# PRマージ後は main ブランチでそのまま検証可能
+```
+
+> 既にリポジトリを clone 済みの場合は `git fetch` を実行する。PR マージ前は続けて `git checkout feature/9-phase1-build-led` を実行する。
+
+---
+
+### Step 2: ファームウェアビルド
+
+#### 推奨: ビルドスクリプト経由
+
+```sh
+export PICO_SDK_PATH=$HOME/pico-sdk    # 実際のパスに置き換える
+./scripts/build.sh --clean             # 初回または再ビルド時
+# 通常時は `./scripts/build.sh` のみで OK
+```
+
+`scripts/build.sh` は CMake 4.x 利用時のワークアラウンド（`CMAKE_POLICY_VERSION_MINIMUM=3.5`）を自動で適用する。
+
+#### 手動実行する場合
+
+```sh
+export PICO_SDK_PATH=$HOME/pico-sdk
+# CMake 4.0 以上を使用する場合は以下も必須（Pico SDK 1.5.1 互換性対応）
+export CMAKE_POLICY_VERSION_MINIMUM=3.5
+cmake -S . -B build -G Ninja
+cmake --build build
+```
+
+> **注**: `CMAKE_POLICY_VERSION_MINIMUM` はシェルで export する必要がある。CMakeLists.txt 内の `set(ENV{})` ではビルド時に ninja が spawn する子 CMake に伝播しないため不可。
+
+**期待結果:**
+
+| 確認項目 | 期待値 |
+|---------|--------|
+| cmake 設定フェーズ | エラーなく完了し `build/` ディレクトリが生成される |
+| ビルドフェーズ | エラーなく完了する（警告は許容） |
+| 成果物 | `build/src/kkbd_usb.uf2` が生成される |
+| ファイルサイズ | 数十 KB〜数百 KB 程度 |
+
+**確認コマンド:**
+
+```sh
+ls -la build/src/kkbd_usb.uf2
+```
+
+---
+
+### Step 3: Pico への書き込み
+
+1. Pico の **BOOTSEL ボタン** を **押し続けたまま** USB ケーブルで PC に接続する
+2. PC のファイルマネージャに `RPI-RP2` というボリューム（ドライブ）が表示されることを確認する
+3. BOOTSEL ボタンを離す
+4. `build/src/kkbd_usb.uf2` を `RPI-RP2` にコピーする
+
+   | OS | コマンド / 操作 |
+   |----|----------------|
+   | macOS | `cp build/src/kkbd_usb.uf2 /Volumes/RPI-RP2/` |
+   | Linux | `cp build/src/kkbd_usb.uf2 /media/$USER/RPI-RP2/` |
+   | Windows | エクスプローラで `RPI-RP2` ドライブへドラッグ＆ドロップ |
+
+5. コピー（書き込み）完了後、Pico は自動的に再起動する
+
+> **注意:** コピー中に USB が切断されたように見えることがあるが、これは正常な動作である（Pico が BOOTSEL モードを終了して再起動するため）。
+
+---
+
+### Step 4: LED 点滅の目視確認
+
+書き込み完了後、Pico 基板上の **緑色 LED**（GPIO 25 接続、BOOTSEL ボタン横）が点滅することを確認する。
+
+> **注**: 本プロジェクトの対象 MCU は RP2040（Pico 無印）。Pico 2（RP2350）および Pico W は本検証の対象外。
+
+| 観察項目 | 期待結果 |
+|---------|---------|
+| LED の点灯有無 | 点灯と消灯を繰り返している |
+| トグル間隔 | **約 500ms**（点灯 500ms + 消灯 500ms = 完全周期 約 1 秒） |
+| 点滅パターン | 等間隔の点滅（不規則ではない） |
+| その他の挙動 | Pico は常時電源 ON（USB から給電されている） |
+
+---
+
+### Step 5: 点滅周期の確認（任意・精密測定）
+
+点滅周期を厳密に確認したい場合は以下の方法を用いる。
+
+**方法 A: ストップウォッチ**
+
+1. LED が点灯した瞬間を起点にストップウォッチをスタートする
+2. 10 回の点滅（ON→OFF を 10 サイクル）にかかる時間を計測する
+3. 計測時間を 10 で割って 1 周期あたりの時間を算出する
+4. 期待値: 完全周期 約 1 秒（トグル間隔 約 500ms × 2）、誤差 ±5% 以内
+
+**方法 B: オシロスコープ / ロジックアナライザ**
+
+1. Pico の GPIO 25 ピン（または内蔵 LED アノード側）にプローブを接続する
+2. 波形の周期を読み取る
+3. 期待値: トグル間隔 約 500ms（完全周期 = ON 時間 + OFF 時間 ≈ 1.0 秒 ± 数%）
+
+---
+
+## 4. 受け入れ条件チェックリスト
+
+Issue #9 の受け入れ条件と対応する確認項目を以下に示す。**すべての項目にチェックが入った場合に Phase 1 合格** とする。
+
+- [x] **条件 1**: `cmake` および `cmake --build build` がエラーなく完了し、`build/src/kkbd_usb.uf2` が生成される
+- [x] **条件 2**: Pico に書き込んだ後、内蔵 LED が約 500ms 間隔でトグル（点灯500ms→消灯500ms→点灯…）して点滅する
+
+---
+
+## 5. 検証結果記録
+
+検証完了後、以下の表に結果を記入して Issue #9 または PR のコメントに貼り付ける。
+
+| 項目 | 内容 |
+|------|------|
+| 検証実施日 | 2026-05-05 |
+| 検証実施者 | k-ogata |
+| 使用 Pico バリアント | Raspberry Pi Pico（無印、RP2040） |
+| OS | macOS |
+| Pico SDK バージョン | 1.5.1 |
+| 結果（条件 1） | ☑ 合格 |
+| 結果（条件 2） | ☑ 合格 |
+| 計測した点滅周期 | 目視確認（約 500ms 間隔のトグル） |
+| 所感・備考 | `scripts/build.sh --clean` で `build/src/kkbd_usb.uf2` を生成し BOOTSEL モードで Pico にコピー。書き込み後、内蔵 LED が等間隔で点滅することを目視確認。CMake 4.x ワークアラウンド（`CMAKE_POLICY_VERSION_MINIMUM=3.5`）も正常動作。 |
+| 添付（写真・動画） | - |
+
+---
+
+## 6. トラブルシューティング
+
+| 症状 | 原因 | 対処 |
+|------|------|------|
+| `PICO_SDK_PATH` が設定されていない旨のエラー | 環境変数未設定 | `export PICO_SDK_PATH=/path/to/pico-sdk` を実施 |
+| `arm-none-eabi-gcc` が見つからない | toolchain 未インストール | toolchain をインストール（README 参照） |
+| `tusb.h` 等のインクルードエラー | Pico SDK のサブモジュール未取得 | `git submodule update --init --recursive` を Pico SDK ディレクトリで実行 |
+| `RPI-RP2` ボリュームが現れない | BOOTSEL を押さずに接続 / 充電専用ケーブル使用 | BOOTSEL を押しながら接続したか確認。USB ケーブルがデータ通信対応か確認 |
+| LED が点灯したまま点滅しない | `.uf2` が正しく書き込まれていない | 再度 BOOTSEL モードで接続し `.uf2` を上書きコピーする |
+| LED がまったく点灯しない | 電源供給の問題 / 書き込み失敗 | Pico の VBUS / 3V3 ピンの電圧を確認。別の USB ポート・ケーブルで再試行 |
+| LED 点滅周期が著しく遅い・速い | ビルド設定の問題 / 計測誤差 | 複数回計測して平均値で判定。それでも異常な場合はソースコードの定数を確認 |
+| ビルドが途中でエラー終了する | SDK バージョン不一致 / 依存ライブラリ不足 | Pico SDK v1.5.1 以上が使用されているか確認。エラーメッセージをもとに不足ライブラリを追加 |
+| `Compatibility with CMake < 3.5 has been removed from CMake.` （pioasm/elf2uf2 サブビルド） | CMake 4.0+ と Pico SDK 1.5.1 同梱 TinyUSB の互換性問題 | `scripts/build.sh` を使用するか、シェルで `export CMAKE_POLICY_VERSION_MINIMUM=3.5` を実行してから `rm -rf build && cmake -S . -B build -G Ninja && cmake --build build`。永続対処として Pico SDK 2.x へのアップグレード（別Issue）を検討 |
+
+---
+
+## 7. 関連ドキュメント
+
+| ドキュメント | 参照目的 |
+|------------|---------|
+| [`README.md`](../../README.md) | 開発環境構築・ビルド方法の詳細 |
+| [`docs/design/設計書.md`](../design/設計書.md) | LED 仕様（3.7 節）、ピンアサイン（4 章）、タイミング設計（9 章） |
+| [`docs/design/実装計画.md`](../design/実装計画.md) | Phase 1 の実装詳細・スケジュール |
+| [`docs/design/テスト戦略.md`](../design/テスト戦略.md) | L4 実機テスト全般の方針 |
+
+---
+
+## 8. 次のステップ
+
+Phase 1 の検証がすべての受け入れ条件で **合格** となった場合、Issue #10（Phase 2: ジャンパー読取と UART 送信）の実装・検証に進む。
+
+検証結果に **不合格** が含まれる場合は、Issue #9 にトラブルシューティング結果を記録し、担当者と対処方針を協議する。
