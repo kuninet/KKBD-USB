@@ -19,9 +19,10 @@
  *     Shift/Ctrl 修飾キー、特殊キー（Esc/Tab/Space/BS）、記号キー、Keypad 数字を完全対応
  *   - usb_host.c は変更なし（既存の keymap_convert(usage, modifier) 呼び出しで自動対応）
  *
- * 将来対応 (Phase 6〜):
- *   - キーリピート登録 (keyrepeat_register)
- *   - LED_STATE_TX による送信可視化
+ * Phase 6 実装範囲（追加）:
+ *   - キーダウン時に keyrepeat_register() でリピート対象キーを登録
+ *   - 全キーリリース時に keyrepeat_cancel() を呼び、リピート停止
+ *   - 送信のたびに led_set_state(LED_STATE_TX) で LED 短時間点滅
  *
  * 異常系 (Phase 7):
  *   - 過電流・通信エラーリカバリ・複数キーボード対応
@@ -196,8 +197,9 @@ void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance) {
  *   Usage ID のみ「キーダウン」イベントとして処理する。
  *   これにより同じキーを押し続けても 1 文字のみ送信される。
  *
- * Phase 6 で追加予定:
+ * Phase 6 で追加済み:
  *   - keyrepeat_register() でリピート対象キーを登録
+ *   - 全キーリリース時に keyrepeat_cancel() を呼びリピート停止
  *   - led_set_state(LED_STATE_TX) で送信時の LED 短時間点滅
  *
  * @param dev_addr  デバイスアドレス
@@ -208,6 +210,28 @@ void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance) {
 void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance,
                                  uint8_t const *report, uint16_t len) {
     if (len >= BOOT_KB_REPORT_SIZE && report != NULL) {
+        /* Phantom 状態検出: Byte 2-7 に ErrorRollOver(0x01)/POSTFail(0x02)/ErrorUndefined(0x03)
+         * のみが存在し、有効キー(>=0x04)が 1 つも無い場合は前回状態を保護する。
+         * 「全スロット 0」は「全キー離した」状態なので Phantom 扱いせず通常処理に回す。
+         * Phase 7 で異常系として詳細対応する余地あり。 */
+        bool has_valid_key = false;
+        bool has_phantom   = false;
+        for (int i = 2; i < BOOT_KB_REPORT_SIZE; i++) {
+            uint8_t const u = report[i];
+            if (u >= 0x04) {
+                has_valid_key = true;
+            } else if (u >= 0x01 && u <= 0x03) {
+                has_phantom = true;
+            }
+        }
+        if (has_phantom && !has_valid_key) {
+            /* Phantom only（有効キーなし、Phantom コードあり）: 状態保護して受信チェーン継続 */
+            if (!tuh_hid_receive_report(dev_addr, instance)) {
+                uart_out_puts("[USB] Failed to re-request HID report\r\n");
+            }
+            return;
+        }
+
         uint8_t const modifier = report[0];
 
         /* Byte 2-7 のキースロットを走査し、新たに押されたキーのみ処理 */
@@ -238,14 +262,33 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance,
             /* キーダウンイベント */
             if (keymap_is_enter(usage)) {
                 uart_out_send_line_ending();
+                led_set_state(LED_STATE_TX);
+                /* Enter は行末コードを 1 回送信のみ。リピート対象としない */
             } else {
                 uint8_t const ascii = keymap_convert(usage, modifier);
                 if (ascii != 0) {
                     uart_out_putc(ascii);
+                    led_set_state(LED_STATE_TX);
+                    keyrepeat_register(ascii);  /* Phase 6: キーリピート対象として登録 */
                 }
-                /* TODO (Phase 6): keyrepeat_register(ascii) を呼び、キーリピート登録 */
-                /* TODO (Phase 6): led_set_state(LED_STATE_TX) で送信時の LED 短時間点滅 */
             }
+        }
+
+        /* Phase 6: 全キーリリース検出 → リピート停止
+         * 現在レポートの Byte 2-7 にリピート対象キー（英字・数字・記号・特殊キー）が
+         * 1 つも無ければ、キーリピートをキャンセルする。
+         * Enter（0x28）/ Keypad Enter（0x58）はリピート対象外なので除外。
+         * Phantom 状態（0x01-0x03）も除外。 */
+        bool any_repeatable_key = false;
+        for (int i = 2; i < BOOT_KB_REPORT_SIZE; i++) {
+            uint8_t const u = report[i];
+            if (u >= 0x04 && !keymap_is_enter(u)) {
+                any_repeatable_key = true;
+                break;
+            }
+        }
+        if (!any_repeatable_key) {
+            keyrepeat_cancel();
         }
 
         /* 現在レポートを保存（次回の差分検出に使用） */
