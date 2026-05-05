@@ -5,6 +5,14 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Phase フラグ（OFF のままでもビルドが通ること）
+# Phase 進行に応じた段階的テスト有効化フラグ。
+#
+# 重要: Phase N の keymap 実装が完了した後は、
+#   それ以前の Phase の単独ビルド（例: Phase 4 only）はテスト失敗する場合がある。
+#   理由: keymap.c が最新 Phase の実装に置き換わると、過去 Phase の「未対応キー」
+#   テストが現実装と矛盾するため。
+#   推奨: 最新 Phase 完了後は対応するフラグをすべて ON にしてビルドする。
+#   例: Phase 5 完了時点では `-DKKBD_PHASE4_DONE=ON -DKKBD_PHASE5_DONE=ON` を指定。
 option(KKBD_PHASE4_DONE "Enable Phase 4 (keymap basic keys/Enter) tests" OFF)
 option(KKBD_PHASE5_DONE "Enable Phase 5 (keymap Shift/Ctrl/special keys) tests" OFF)
 

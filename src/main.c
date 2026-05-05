@@ -16,7 +16,7 @@ int main(void) {
     /* 起動バナー（Phase 3 以降）。
      * Phase 2 の 1 秒毎 Ready ループは usb_host のマウント/アンマウントログに置換。
      */
-    uart_out_puts("KKBD-USB v0.1 (Phase 4) - Waiting for USB keyboard...\r\n");
+    uart_out_puts("KKBD-USB v0.1 (Phase 5) - Waiting for USB keyboard...\r\n");
 
     while (true) {
         usb_host_task();
