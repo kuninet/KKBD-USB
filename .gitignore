@@ -39,3 +39,9 @@ Thumbs.db
 
 # Claude
 .claude/
+
+# Pico SDK (誤ってプロジェクトルートに clone された場合の保険。
+# 推奨は PICO_SDK_PATH でプロジェクト外を参照する方式)
+pico-sdk/
+extern/
+vendor/

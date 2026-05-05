@@ -112,16 +112,23 @@ KKBD-USB/
 
 | ツール | バージョン | インストール例（macOS） |
 |--------|-----------|------------------------|
-| Raspberry Pi Pico SDK | v1.5.1 以上 | `git clone -b 1.5.1 https://github.com/raspberrypi/pico-sdk.git --recurse-submodules` |
+| Raspberry Pi Pico SDK | v1.5.1 以上 | 後述「Pico SDK のセットアップ」参照 |
 | arm-none-eabi-gcc | 10 以上 | `brew install --cask gcc-arm-embedded` |
 | CMake | 3.13 以上 | `brew install cmake` |
 | Ninja（推奨） | - | `brew install ninja` |
 | picotool（任意） | - | `brew install picotool` |
 
-環境変数 `PICO_SDK_PATH` に Pico SDK のパスを設定してください。
+### Pico SDK のセットアップ
+
+> **注意**: Pico SDK は **本リポジトリの外** に clone してください。プロジェクトルート内に clone すると未追跡ファイルとして混入し、誤コミットの原因になります（`.gitignore` でも一応保護していますが、別ディレクトリに置く運用が推奨です）。
 
 ```sh
-export PICO_SDK_PATH=/path/to/pico-sdk
+# プロジェクト外の任意の場所（例: ホームディレクトリ）に clone
+cd ~
+git clone -b 1.5.1 https://github.com/raspberrypi/pico-sdk.git --recurse-submodules
+
+# 環境変数 PICO_SDK_PATH を設定（~/.zshrc や ~/.bashrc に追記すると永続化）
+export PICO_SDK_PATH=$HOME/pico-sdk
 ```
 
 Linux / Windows のセットアップは [Pico SDK 公式ドキュメント](https://github.com/raspberrypi/pico-sdk) を参照してください。
