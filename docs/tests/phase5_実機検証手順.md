@@ -237,15 +237,15 @@ KKBD-USB v0.1 (Phase 5) - Waiting for USB keyboard...
 
 Issue #13 の受け入れ条件と対応する確認項目を以下に示す。**すべての項目にチェックが入った場合に Phase 5 合格** とする。
 
-- [ ] **条件 1**: Shift+A〜Z で大文字 A〜Z が UART に送信される（TC-501 合格）
-- [ ] **条件 2**: Shift+数字キー・記号キーで対応記号（`!`, `@`, `#`, `$` 等）が UART に送信される（TC-502/TC-504 合格）
-- [ ] **条件 3**: Ctrl+A〜Z で制御文字 0x01〜0x1A が UART に送信される（TC-505〜TC-507 合格）
+- [x] **条件 1**: Shift+A〜Z で大文字 A〜Z が UART に送信される（TC-501 合格）
+- [x] **条件 2**: Shift+数字キー・記号キーで対応記号（`!`, `@`, `#`, `$` 等）が UART に送信される（TC-502/TC-504 合格）
+- [x] **条件 3**: Ctrl+A〜Z で制御文字 0x01〜0x1A が UART に送信される（TC-505〜TC-507 合格）
   - 補助 TC: TC-508（Ctrl+`[` → 0x1B）も合格すること（設計書 §5.4 の Ctrl+記号テーブル拡張範囲）
-- [ ] **条件 4**: Esc キーで 0x1B が送信される（TC-509 合格）
-- [ ] **条件 5**: Tab キーで 0x09 が送信される（TC-510 合格）
-- [ ] **条件 6**: Backspace キーで 0x08（BS）が送信される（TC-512 合格）
-- [ ] **条件 7**: Space キーで 0x20 が送信される（TC-511 合格）
-- [ ] **条件 8**: ホスト側ユニットテスト（`KKBD_PHASE5_DONE=ON`）の 8 関数すべてがパスする
+- [x] **条件 4**: Esc キーで 0x1B が送信される（TC-509 合格）
+- [x] **条件 5**: Tab キーで 0x09 が送信される（TC-510 合格）
+- [x] **条件 6**: Backspace キーで 0x08（BS）が送信される（TC-512 合格）
+- [x] **条件 7**: Space キーで 0x20 が送信される（TC-511 合格）
+- [x] **条件 8**: ホスト側ユニットテスト（`KKBD_PHASE5_DONE=ON`）の 8 関数すべてがパスする
   - `test_keymap_convert_shift_uppercase`
   - `test_keymap_convert_shift_symbols`
   - `test_keymap_convert_symbols_no_shift`
@@ -273,14 +273,14 @@ ctest --test-dir build-tests --output-on-failure
 
 | 項目 | 内容 |
 |------|------|
-| 検証実施日 | （実施日を記入） |
-| 検証実施者 | （担当者名を記入） |
+| 検証実施日 | 2026-05-05 |
+| 検証実施者 | k-ogata |
 | 使用 Pico バリアント | Raspberry Pi Pico（無印、RP2040） |
-| OS | （macOS / Linux / Windows を記入） |
+| OS | macOS |
 | Pico SDK バージョン | 1.5.1 |
-| USB-シリアル変換アダプタ | （実機検証時に使用したものを記入） |
-| シリアル端末ソフト | （使用ソフトを記入） |
-| 使用キーボード | （テンキー付き / なし、型番を記入） |
+| USB-シリアル変換アダプタ | （実機検証時に使用したもの） |
+| シリアル端末ソフト | `python3 -m serial.tools.miniterm -f hexlify` で制御文字確認 |
+| 使用キーボード | JIS（106/109）配列キーボード（マルチ HID インターフェース） |
 | USB OTG アダプタ / ケーブル | VBUS 給電パススルー対応 |
 | ボーレート | 9600 |
 | 行末コードジャンパー設定 | JP1=OPEN, JP2=OPEN → CR |
@@ -289,50 +289,52 @@ ctest --test-dir build-tests --output-on-failure
 
 | TC | 操作 | 期待動作 | 結果 | 備考 |
 |----|------|---------|------|------|
-| TC-501 | Shift+`a`〜`z` 入力（Caps Lock OFF） | `ABCDEFGHIJKLMNOPQRSTUVWXYZ` 表示 | | |
-| TC-502 | Shift+`1`〜`0` 入力 | `!@#$%^&*()` 表示 | | |
-| TC-503 | 記号キー（Shift なし）11 種入力 | 該当記号そのまま表示 | | |
-| TC-504 | Shift+記号キー 11 種入力 | `_+{}|:"~<>?` 表示 | | |
-| TC-505 | Ctrl+`a` | 0x01（SOH）送信 | | ログツールで確認 |
-| TC-506 | Ctrl+`c` | 0x03（ETX）送信 | | ログツールで確認 |
-| TC-507 | Ctrl+`m` | 0x0D（CR）送信 | | Enter と同じバイト |
-| TC-508 | Ctrl+`[` | 0x1B（ESC）送信 | | ログツールで確認 |
-| TC-509 | Esc キー | 0x1B 送信 | | |
-| TC-510 | Tab キー | 0x09 送信 | | |
-| TC-511 | Space キー | 0x20 送信 | | |
-| TC-512 | Backspace キー | 0x08（BS）送信 | | |
-| TC-513 | テンキー数字 1〜9 および 0（NumLock ON） | 該当数字表示 | | テンキー付きキーボードのみ |
-| TC-514 | テンキー `.` | `.` 表示 | | テンキー付きキーボードのみ |
-| TC-515 | テンキー Enter | 行末コード送信（メイン Enter と同じ） | | テンキー付きキーボードのみ |
-| TC-516 | Ctrl+Shift+`a` | 0x01（Ctrl 優先） | | |
+| TC-501 | Shift+`a`〜`z` 入力（Caps Lock OFF） | `ABCDEFGHIJKLMNOPQRSTUVWXYZ` 表示 | ☑ 合格 | 大文字正常 |
+| TC-502 | Shift+`1`〜`0` 入力 | `!@#$%^&*()` 表示 | ☑ 合格 | US 配列基準で正常 |
+| TC-503 | 記号キー（Shift なし）11 種入力 | 該当記号そのまま表示 | ☑ 合格 | US 配列基準で正常 |
+| TC-504 | Shift+記号キー 11 種入力 | `_+{}|:"~<>?` 表示 | ☑ 合格 | US 配列基準で正常 |
+| TC-505 | Ctrl+`a` | 0x01（SOH）送信 | ☑ 合格 | miniterm `-f hexlify` で確認 |
+| TC-506 | Ctrl+`c` | 0x03（ETX）送信 | ☑ 合格 | miniterm `-f hexlify` で確認 |
+| TC-507 | Ctrl+`m` | 0x0D（CR）送信 | ☑ 合格 | Enter と同じバイト |
+| TC-508 | Ctrl+`[` | 0x1B（ESC）送信 | ☑ 合格 | 設計書 §5.4 補助 |
+| TC-509 | Esc キー | 0x1B 送信 | ☑ 合格 | |
+| TC-510 | Tab キー | 0x09 送信 | ☑ 合格 | |
+| TC-511 | Space キー | 0x20 送信 | ☑ 合格 | |
+| TC-512 | Backspace キー | 0x08（BS）送信 | ☑ 合格 | |
+| TC-513 | テンキー数字 1〜9 および 0（NumLock ON） | 該当数字表示 | ☑ 合格 | NumLock ON で正常 |
+| TC-514 | テンキー `.` | `.` 表示 | ☑ 合格 | |
+| TC-515 | テンキー Enter | 行末コード送信（メイン Enter と同じ） | ☑ 合格 | |
+| TC-516 | Ctrl+Shift+`a` | 0x01（Ctrl 優先） | ☑ 合格 | 優先度ロジック正常 |
+
+> **注（JIS キーボード使用時）**: 使用キーボードは JIS 配列だが、本実装は要件定義 §6.2・設計書 §5.2 通り **US 101/104 配列基準**。記号キーの刻印位置と送信内容は一致しないが、HID Usage ID ベースで US 配列として動作することを確認した。JIS 固有キー（半角/全角・変換・無変換・カナ・¥）は無視（仕様通り）。JIS 配列対応は別 Issue として検討余地あり。
 
 ### ユニットテスト結果
 
 | テスト関数 | 結果 | 備考 |
 |-----------|------|------|
-| `test_keymap_convert_shift_uppercase` | | |
-| `test_keymap_convert_shift_symbols` | | |
-| `test_keymap_convert_symbols_no_shift` | | |
-| `test_keymap_convert_symbols_with_shift` | | |
-| `test_keymap_convert_ctrl_control_chars` | | |
-| `test_keymap_convert_special_keys` | | |
-| `test_keymap_convert_keypad` | | |
-| `test_keymap_convert_priority_ctrl_over_shift` | | |
+| `test_keymap_convert_shift_uppercase` | ☑ 合格 | a/m/z + 左右Shift |
+| `test_keymap_convert_shift_symbols` | ☑ 合格 | Shift+1〜0 → !@#$%^&*() |
+| `test_keymap_convert_symbols_no_shift` | ☑ 合格 | 記号 11 種 |
+| `test_keymap_convert_symbols_with_shift` | ☑ 合格 | Shift+記号 11 種 |
+| `test_keymap_convert_ctrl_control_chars` | ☑ 合格 | Ctrl+a/c/m/z + Ctrl+記号 4 種 |
+| `test_keymap_convert_special_keys` | ☑ 合格 | Esc/Tab/Space/BS |
+| `test_keymap_convert_keypad` | ☑ 合格 | Keypad 1-9, 0, . |
+| `test_keymap_convert_priority_ctrl_over_shift` | ☑ 合格 | Ctrl+Shift+a → 0x01 |
 
 ### 総合判定
 
 | 項目 | 結果 |
 |------|------|
-| 受け入れ条件 1（TC-501） | |
-| 受け入れ条件 2（TC-502/504） | |
-| 受け入れ条件 3（TC-505〜507） | |
-| 受け入れ条件 4（TC-509） | |
-| 受け入れ条件 5（TC-510） | |
-| 受け入れ条件 6（TC-512） | |
-| 受け入れ条件 7（TC-511） | |
-| 受け入れ条件 8（ユニットテスト 8 関数） | |
-| **Phase 5 総合** | |
-| 所感・備考 | |
+| 受け入れ条件 1（TC-501） | ☑ 合格 |
+| 受け入れ条件 2（TC-502/504） | ☑ 合格 |
+| 受け入れ条件 3（TC-505〜507） | ☑ 合格 |
+| 受け入れ条件 4（TC-509） | ☑ 合格 |
+| 受け入れ条件 5（TC-510） | ☑ 合格 |
+| 受け入れ条件 6（TC-512） | ☑ 合格 |
+| 受け入れ条件 7（TC-511） | ☑ 合格 |
+| 受け入れ条件 8（ユニットテスト 8 関数） | ☑ 合格 |
+| **Phase 5 総合** | ☑ **合格** |
+| 所感・備考 | Shift/Ctrl/特殊キー/記号/Keypad/優先度すべて実機で確認。制御文字は `python3 -m serial.tools.miniterm -f hexlify` で 16 進確認。JIS 配列キーボード使用のため記号キーの刻印位置と送信内容が一致しないが、US 配列基準として正しく動作。JIS 配列の固有対応は別 Issue 候補。|
 | 添付（写真・動画） | - |
 
 ---
