@@ -15,6 +15,11 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 #   例: Phase 5 完了時点では `-DKKBD_PHASE4_DONE=ON -DKKBD_PHASE5_DONE=ON` を指定。
 option(KKBD_PHASE4_DONE "Enable Phase 4 (keymap basic keys/Enter) tests" OFF)
 option(KKBD_PHASE5_DONE "Enable Phase 5 (keymap Shift/Ctrl/special keys) tests" OFF)
+# 注: KKBD_PHASE6_DONE は test_keyrepeat には影響しない
+# （test_keyrepeat は keyrepeat_decide の純粋関数のみテストするため、
+#  Phase 6 完了/未完了に関係なくビルド・実行可能）。
+# フラグは将来 keymap.c のような Phase 別ガード化に備えた予約フラグ。
+option(KKBD_PHASE6_DONE "Enable Phase 6 (keyrepeat/LED) tests" OFF)
 
 # 警告を厳しく
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -26,6 +31,9 @@ if(KKBD_PHASE4_DONE)
 endif()
 if(KKBD_PHASE5_DONE)
     add_compile_definitions(KKBD_PHASE5_DONE)
+endif()
+if(KKBD_PHASE6_DONE)
+    add_compile_definitions(KKBD_PHASE6_DONE)
 endif()
 
 enable_testing()
@@ -60,3 +68,15 @@ target_include_directories(test_config PRIVATE
 # KKBD_HOST_TEST=1 を定義して Pico SDK 依存箇所をコンパイル対象から除外する。
 target_compile_definitions(test_config PRIVATE KKBD_HOST_TEST=1)
 add_test(NAME test_config COMMAND test_config)
+
+# keyrepeat テスト（Phase 6）
+add_executable(test_keyrepeat
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_keyrepeat.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/keyrepeat.c
+)
+target_include_directories(test_keyrepeat PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+target_compile_definitions(test_keyrepeat PRIVATE KKBD_HOST_TEST=1)
+add_test(NAME test_keyrepeat COMMAND test_keyrepeat)

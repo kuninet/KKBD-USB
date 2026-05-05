@@ -4,7 +4,7 @@
 ![MCU](https://img.shields.io/badge/MCU-RP2040-blue)
 ![言語](https://img.shields.io/badge/言語-C%2FC%2B%2B-brightgreen)
 
-> **注意: 現在開発進行中のプロジェクトです。Phase 1/2/3/4/5 完了、Phase 6 未着手。**
+> **注意: 現在開発進行中のプロジェクトです。Phase 1〜6 完了、Phase 7 未着手。**
 
 ## 概要
 
@@ -32,7 +32,7 @@ Raspberry Pi Pico（RP2040）の USB ホスト機能を利用し、USB キーボ
 | Phase 3 | USBホスト基盤（TinyUSB） | 完了（実機検証済み） |
 | Phase 4 | 基本キー入力（英数字） | 完了（実機検証済み） |
 | Phase 5 | 修飾キー対応 | 完了（実機検証済み） |
-| Phase 6 | 行末コード・キーリピート・LED | 未着手 |
+| Phase 6 | 行末コード・キーリピート・LED | 完了（実機検証済み） |
 | Phase 7 | 異常系処理 | 未着手 |
 | Phase 8 | 実機検証 | 未着手 |
 
@@ -105,7 +105,9 @@ KKBD-USB/
 └── tests/                      # ホスト側ユニットテスト（独立CMake）
     ├── CMakeLists.txt
     ├── test_framework.h
-    └── test_keymap.c
+    ├── test_keymap.c
+    ├── test_config.c
+    └── test_keyrepeat.c
 ```
 
 ## 開発環境
@@ -187,6 +189,7 @@ ctest --test-dir build-tests --output-on-failure
 - Phase 3: [`docs/tests/phase3_実機検証手順.md`](docs/tests/phase3_実機検証手順.md)
 - Phase 4: [`docs/tests/phase4_実機検証手順.md`](docs/tests/phase4_実機検証手順.md)
 - Phase 5: [`docs/tests/phase5_実機検証手順.md`](docs/tests/phase5_実機検証手順.md)
+- Phase 6: [`docs/tests/phase6_実機検証手順.md`](docs/tests/phase6_実機検証手順.md)
 
 ## draw.io 変換ツールの使い方
 
