@@ -138,12 +138,14 @@ Linux / Windows のセットアップは [Pico SDK 公式ドキュメント](htt
 ### ファームウェアビルド
 
 ```sh
-export PICO_SDK_PATH=/path/to/pico-sdk
+export PICO_SDK_PATH=$HOME/pico-sdk
 cmake -S . -B build -G Ninja
 cmake --build build
 ```
 
 ビルドが成功すると `build/src/kkbd_usb.uf2` が生成されます。
+
+> **Note (CMake 4.x 利用時)**: Pico SDK 1.5.1 同梱の TinyUSB のサブビルド（`pioasm` / `elf2uf2`）が古い `cmake_minimum_required` を持つため、CMake 4.0 以上では本来エラーになります。本プロジェクトのルート `CMakeLists.txt` で自動的に `CMAKE_POLICY_VERSION_MINIMUM=3.5` を環境変数に設定して回避しているため、追加対応は不要です。Pico SDK 2.x へのアップグレードで本対応は不要になります。
 
 ### Pico への書き込み
 
