@@ -135,17 +135,28 @@ Linux / Windows のセットアップは [Pico SDK 公式ドキュメント](htt
 
 ## ビルド方法
 
-### ファームウェアビルド
+### 推奨: ビルドスクリプト経由
 
 ```sh
 export PICO_SDK_PATH=$HOME/pico-sdk
+./scripts/build.sh           # 通常ビルド
+./scripts/build.sh --clean   # build/ を削除して再ビルド
+```
+
+ビルドが成功すると `build/src/kkbd_usb.uf2` が生成されます。
+`scripts/build.sh` は CMake 4.x 利用時のワークアラウンド（`CMAKE_POLICY_VERSION_MINIMUM=3.5`）を自動的に設定します。
+
+### 手動ビルド
+
+```sh
+export PICO_SDK_PATH=$HOME/pico-sdk
+# CMake 4.0+ を使う場合は以下も必要（Pico SDK 1.5.1 互換性対応）
+export CMAKE_POLICY_VERSION_MINIMUM=3.5
 cmake -S . -B build -G Ninja
 cmake --build build
 ```
 
-ビルドが成功すると `build/src/kkbd_usb.uf2` が生成されます。
-
-> **Note (CMake 4.x 利用時)**: Pico SDK 1.5.1 同梱の TinyUSB のサブビルド（`pioasm` / `elf2uf2`）が古い `cmake_minimum_required` を持つため、CMake 4.0 以上では本来エラーになります。本プロジェクトのルート `CMakeLists.txt` で自動的に `CMAKE_POLICY_VERSION_MINIMUM=3.5` を環境変数に設定して回避しているため、追加対応は不要です。Pico SDK 2.x へのアップグレードで本対応は不要になります。
+> **Note (CMake 4.x 利用時)**: Pico SDK 1.5.1 同梱の TinyUSB サブビルド（`pioasm` / `elf2uf2`）が古い `cmake_minimum_required` を持つため、CMake 4.0 以上ではビルド時にエラーになります。`CMAKE_POLICY_VERSION_MINIMUM=3.5` を **シェルで export** することで ExternalProject_Add の子 CMake 呼び出しに env var が伝播し回避できます（CMakeLists.txt 内の `set(ENV{})` ではビルド時の sub-cmake 起動に伝播しないため不可）。Pico SDK 2.x へのアップグレードで本対応は不要になります。
 
 ### Pico への書き込み
 

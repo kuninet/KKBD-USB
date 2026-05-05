@@ -192,7 +192,7 @@ Issue #9 の受け入れ条件と対応する確認項目を以下に示す。**
 | LED がまったく点灯しない | 電源供給の問題 / 書き込み失敗 | Pico の VBUS / 3V3 ピンの電圧を確認。別の USB ポート・ケーブルで再試行 |
 | LED 点滅周期が著しく遅い・速い | ビルド設定の問題 / 計測誤差 | 複数回計測して平均値で判定。それでも異常な場合はソースコードの定数を確認 |
 | ビルドが途中でエラー終了する | SDK バージョン不一致 / 依存ライブラリ不足 | Pico SDK v1.5.1 以上が使用されているか確認。エラーメッセージをもとに不足ライブラリを追加 |
-| `Compatibility with CMake < 3.5 has been removed from CMake.` （pioasm/elf2uf2 サブビルド） | CMake 4.0+ と Pico SDK 1.5.1 同梱 TinyUSB の互換性問題 | ルート `CMakeLists.txt` で自動回避済み。それでも発生する場合は `rm -rf build` でキャッシュ削除後に再 configure。永続対処として Pico SDK 2.x へのアップグレード（別Issue）を検討 |
+| `Compatibility with CMake < 3.5 has been removed from CMake.` （pioasm/elf2uf2 サブビルド） | CMake 4.0+ と Pico SDK 1.5.1 同梱 TinyUSB の互換性問題 | `scripts/build.sh` を使用するか、シェルで `export CMAKE_POLICY_VERSION_MINIMUM=3.5` を実行してから `rm -rf build && cmake -S . -B build -G Ninja && cmake --build build`。永続対処として Pico SDK 2.x へのアップグレード（別Issue）を検討 |
 
 ---
 
