@@ -4,7 +4,7 @@
 ![MCU](https://img.shields.io/badge/MCU-RP2040-blue)
 ![言語](https://img.shields.io/badge/言語-C%2FC%2B%2B-brightgreen)
 
-> **注意: 現在開発進行中のプロジェクトです。ファームウェアは未実装です。**
+> **注意: 現在開発進行中のプロジェクトです。Phase 1/2 完了、Phase 3 実装中。**
 
 ## 概要
 
@@ -29,7 +29,7 @@ Raspberry Pi Pico（RP2040）の USB ホスト機能を利用し、USB キーボ
 |-------|------|------|
 | Phase 1 | ビルド環境構築・Lチカ | 完了（実機検証済み） |
 | Phase 2 | ジャンパー読取とUART送信 | 完了（実機検証済み） |
-| Phase 3 | USBホスト基盤（TinyUSB） | 未着手 |
+| Phase 3 | USBホスト基盤（TinyUSB） | 実装中 |
 | Phase 4 | 基本キー入力（英数字） | 未着手 |
 | Phase 5 | 修飾キー対応 | 未着手 |
 | Phase 6 | 行末コード・キーリピート・LED | 未着手 |
@@ -184,6 +184,7 @@ ctest --test-dir build-tests --output-on-failure
 
 - Phase 1: [`docs/tests/phase1_実機検証手順.md`](docs/tests/phase1_実機検証手順.md)
 - Phase 2: [`docs/tests/phase2_実機検証手順.md`](docs/tests/phase2_実機検証手順.md)
+- Phase 3: [`docs/tests/phase3_実機検証手順.md`](docs/tests/phase3_実機検証手順.md)
 
 ## draw.io 変換ツールの使い方
 
