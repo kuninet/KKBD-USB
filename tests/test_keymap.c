@@ -22,8 +22,8 @@ TEST(test_modifier_constants) {
 
 /* ========================================
  * Phase 4 実装後に有効化するテスト
- * 現状 keymap.c はスタブのため、以下のテストは
- * KKBD_PHASE4_DONE 定義後に有効化する
+ * keymap.c の英数字 + Enter 基本実装完了後に
+ * KKBD_PHASE4_DONE を定義して有効化する
  * ======================================== */
 
 TEST(test_keymap_convert_lowercase) {
@@ -32,6 +32,44 @@ TEST(test_keymap_convert_lowercase) {
     EXPECT_EQ('b', keymap_convert(0x05, 0));
     EXPECT_EQ('z', keymap_convert(0x1D, 0));
 }
+
+TEST(test_keymap_convert_digits) {
+    /* HID Usage ID 0x1E (1) → '1' (0x31) */
+    EXPECT_EQ('1', keymap_convert(0x1E, 0));
+    EXPECT_EQ('0', keymap_convert(0x27, 0));
+}
+
+TEST(test_keymap_convert_unsupported) {
+    /* 範囲下限の直前（Reserved/Error コード） */
+    EXPECT_EQ(0x00, keymap_convert(0x00, 0));     /* Reserved */
+    EXPECT_EQ(0x00, keymap_convert(0x01, 0));     /* ErrorRollOver */
+    EXPECT_EQ(0x00, keymap_convert(0x03, 0));     /* ErrorUndefined */
+    /* Enter は keymap_is_enter で判定するため convert は 0 を返す */
+    EXPECT_EQ(0x00, keymap_convert(0x28, 0));     /* Enter（変換は0、is_enter で判定） */
+    EXPECT_EQ(0x00, keymap_convert(0x58, 0));     /* Keypad Enter */
+    /* Phase 5 で実装予定の特殊・記号キー（Phase 4 では未対応） */
+    EXPECT_EQ(0x00, keymap_convert(0x29, 0));     /* Esc（Phase 5 対応予定） */
+    EXPECT_EQ(0x00, keymap_convert(0x2A, 0));     /* Backspace（Phase 5 対応予定） */
+    EXPECT_EQ(0x00, keymap_convert(0x2B, 0));     /* Tab（Phase 5 対応予定） */
+    EXPECT_EQ(0x00, keymap_convert(0x2C, 0));     /* Space（Phase 5 対応予定） */
+    /* F キー */
+    EXPECT_EQ(0x00, keymap_convert(0x3A, 0));     /* F1 */
+    /* 範囲外（最上位） */
+    EXPECT_EQ(0x00, keymap_convert(0xFF, 0));     /* 範囲外 */
+}
+
+TEST(test_keymap_is_enter) {
+    EXPECT_TRUE(keymap_is_enter(0x28));   /* Return Enter */
+    EXPECT_TRUE(keymap_is_enter(0x58));   /* Keypad Enter */
+    EXPECT_FALSE(keymap_is_enter(0x04));  /* 'a' は Enter ではない */
+    EXPECT_FALSE(keymap_is_enter(0x29));  /* Esc は Enter ではない */
+}
+
+/* ========================================
+ * Phase 5 実装後に有効化するテスト
+ * Shift/Ctrl 修飾・特殊キー実装完了後に
+ * KKBD_PHASE5_DONE を定義して有効化する
+ * ======================================== */
 
 TEST(test_keymap_convert_shift_uppercase) {
     /* Shift+a → 'A' */
@@ -47,12 +85,6 @@ TEST(test_keymap_convert_ctrl_control_chars) {
     EXPECT_EQ(0x1A, keymap_convert(0x1D, MOD_LCTRL)); /* Ctrl+z → SUB */
 }
 
-TEST(test_keymap_convert_digits) {
-    /* HID Usage ID 0x1E (1) → '1' (0x31) */
-    EXPECT_EQ('1', keymap_convert(0x1E, 0));
-    EXPECT_EQ('0', keymap_convert(0x27, 0));
-}
-
 TEST(test_keymap_convert_special_keys) {
     EXPECT_EQ(0x1B, keymap_convert(0x29, 0)); /* Esc */
     EXPECT_EQ(0x09, keymap_convert(0x2B, 0)); /* Tab */
@@ -60,31 +92,23 @@ TEST(test_keymap_convert_special_keys) {
     EXPECT_EQ(0x08, keymap_convert(0x2A, 0)); /* Backspace → BS */
 }
 
-TEST(test_keymap_convert_unsupported) {
-    /* 未対応キー（F1=0x3A など）は 0x00 を返す */
-    EXPECT_EQ(0x00, keymap_convert(0x3A, 0));
-}
-
-TEST(test_keymap_is_enter) {
-    EXPECT_TRUE(keymap_is_enter(0x28));   /* Return Enter */
-    EXPECT_TRUE(keymap_is_enter(0x58));   /* Keypad Enter */
-    EXPECT_FALSE(keymap_is_enter(0x04));  /* 'a' は Enter ではない */
-    EXPECT_FALSE(keymap_is_enter(0x29));  /* Esc は Enter ではない */
-}
-
 int main(void) {
     /* 現時点で通るテスト */
     RUN_TEST(test_modifier_constants);
 
 #ifdef KKBD_PHASE4_DONE
-    /* Phase 4 (keymap実装) 完了後に有効化 */
+    /* Phase 4 (keymap英数字+Enter+未対応キー判定) 実装後に有効化 */
     RUN_TEST(test_keymap_convert_lowercase);
-    RUN_TEST(test_keymap_convert_shift_uppercase);
-    RUN_TEST(test_keymap_convert_ctrl_control_chars);
     RUN_TEST(test_keymap_convert_digits);
-    RUN_TEST(test_keymap_convert_special_keys);
     RUN_TEST(test_keymap_convert_unsupported);
     RUN_TEST(test_keymap_is_enter);
+#endif
+
+#ifdef KKBD_PHASE5_DONE
+    /* Phase 5 (Shift/Ctrl/特殊キー) 実装後に有効化 */
+    RUN_TEST(test_keymap_convert_shift_uppercase);
+    RUN_TEST(test_keymap_convert_ctrl_control_chars);
+    RUN_TEST(test_keymap_convert_special_keys);
 #endif
 
     TEST_SUMMARY();
