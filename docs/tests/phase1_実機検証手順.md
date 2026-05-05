@@ -76,11 +76,27 @@ cd KKBD-USB
 
 ### Step 2: ファームウェアビルド
 
+#### 推奨: ビルドスクリプト経由
+
 ```sh
-export PICO_SDK_PATH=/path/to/pico-sdk   # 実際のパスに置き換える
+export PICO_SDK_PATH=$HOME/pico-sdk    # 実際のパスに置き換える
+./scripts/build.sh --clean             # 初回または再ビルド時
+# 通常時は `./scripts/build.sh` のみで OK
+```
+
+`scripts/build.sh` は CMake 4.x 利用時のワークアラウンド（`CMAKE_POLICY_VERSION_MINIMUM=3.5`）を自動で適用する。
+
+#### 手動実行する場合
+
+```sh
+export PICO_SDK_PATH=$HOME/pico-sdk
+# CMake 4.0 以上を使用する場合は以下も必須（Pico SDK 1.5.1 互換性対応）
+export CMAKE_POLICY_VERSION_MINIMUM=3.5
 cmake -S . -B build -G Ninja
 cmake --build build
 ```
+
+> **注**: `CMAKE_POLICY_VERSION_MINIMUM` はシェルで export する必要がある。CMakeLists.txt 内の `set(ENV{})` ではビルド時に ninja が spawn する子 CMake に伝播しないため不可。
 
 **期待結果:**
 
