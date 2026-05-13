@@ -51,6 +51,11 @@ Raspberry Pi Pico（RP2040）の USB ホスト機能を利用し、USB キーボ
 
 詳細は [`docs/design/実装計画.md`](docs/design/実装計画.md) を参照してください。
 
+### 将来計画（検討中）
+
+- [SBC 応答モニタ機能の検討（Plan A: UART1 パススルー / Plan B: スタンドアロン端末化）](docs/design/将来計画_応答モニタ_概要.md) — 検討中・未着手、Issue [#27](https://github.com/kuninet/KKBD-USB/issues/27) で追跡
+- [5V SBC（MC6850 / 8251）接続のための電圧レベル変換ガイド](docs/design/将来計画_5V_SBC接続_電圧レベル変換.md) — 検討中・未着手、Issue [#29](https://github.com/kuninet/KKBD-USB/issues/29) で追跡
+
 ## ユーザー向けマニュアル
 
 KKBD-USB の組み立て・ビルド・使い方の詳細手順は [`docs/manual/`](docs/manual/) を参照してください。
