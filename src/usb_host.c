@@ -29,10 +29,17 @@
  *   - tuh_init() 失敗時のセーフモード（tuh_task() 抑止） → Phase 7
  *   - tuh_hid_receive_report() 失敗時の再試行ロジック → Phase 7
  *   - Report Protocol のみ対応キーボード（Boot Protocol 非対応）への対応 → Phase 7 以降
+ *
+ * Phase 9 実装範囲（追加）:
+ *   - 全ログ出力を uart_out_puts (UART0/SBC 側) から uart_monitor_puts (UART1/モニタ側) に振替
+ *   - キー入力送信時、JP5 が SHORT (ON) なら UART1 にもローカルエコー出力
+ *   - 既存の UART0 への送信動作（FR-006、FR-004）は変更なし
  */
 
 #include "usb_host.h"
 #include "uart_out.h"
+#include "uart_monitor.h"
+#include "config.h"
 #include "led.h"
 #include "keyrepeat.h"
 #include "keymap.h"
@@ -63,12 +70,12 @@ static uint8_t s_prev_report[BOOT_KB_REPORT_SIZE] = {0}; /* 前回 HID レポー
 void usb_host_init(void) {
     bool ok = tuh_init(BOARD_TUH_RHPORT);
     if (!ok) {
-        uart_out_puts("[USB] tuh_init failed\r\n");
+        uart_monitor_puts("[USB] tuh_init failed\r\n");
         led_set_state(LED_STATE_ERROR);
         /* TODO (Phase 7): tuh_init() 失敗時のセーフモード（tuh_task() 抑止）を実装する */
         return;
     }
-    uart_out_puts("[USB] TinyUSB host initialized\r\n");
+    uart_monitor_puts("[USB] TinyUSB host initialized\r\n");
     led_set_state(LED_STATE_WAIT_DEVICE);
 }
 
@@ -116,7 +123,7 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance,
         snprintf(buf, sizeof(buf),
                  "[USB] Non-keyboard HID ignored (proto=%u)\r\n",
                  (unsigned)itf_protocol);
-        uart_out_puts(buf);
+        uart_monitor_puts(buf);
         return;
     }
 
@@ -138,13 +145,13 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance,
     snprintf(buf, sizeof(buf),
              "[USB] Keyboard connected (addr=%u, instance=%u)\r\n",
              (unsigned)dev_addr, (unsigned)instance);
-    uart_out_puts(buf);
+    uart_monitor_puts(buf);
 
     led_set_state(LED_STATE_MOUNTED);
 
     /* 最初のレポート受信を要求（受信チェーン開始） */
     if (!tuh_hid_receive_report(dev_addr, instance)) {
-        uart_out_puts("[USB] Failed to request HID report\r\n");
+        uart_monitor_puts("[USB] Failed to request HID report\r\n");
         /* TODO (Phase 7): tuh_hid_receive_report() 失敗時の再試行ロジックを実装する */
     }
 }
@@ -172,7 +179,7 @@ void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance) {
     s_kb_instance      = 0;
     memset(s_prev_report, 0, BOOT_KB_REPORT_SIZE);
 
-    uart_out_puts("[USB] Keyboard disconnected\r\n");
+    uart_monitor_puts("[USB] Keyboard disconnected\r\n");
 
     /* キーリピートをキャンセル（設計書 6.5節） */
     keyrepeat_cancel();
@@ -227,7 +234,7 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance,
         if (has_phantom && !has_valid_key) {
             /* Phantom only（有効キーなし、Phantom コードあり）: 状態保護して受信チェーン継続 */
             if (!tuh_hid_receive_report(dev_addr, instance)) {
-                uart_out_puts("[USB] Failed to re-request HID report\r\n");
+                uart_monitor_puts("[USB] Failed to re-request HID report\r\n");
             }
             return;
         }
@@ -264,12 +271,20 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance,
                 uart_out_send_line_ending();
                 led_set_state(LED_STATE_TX);
                 /* Enter は行末コードを 1 回送信のみ。リピート対象としない */
+                /* Phase 9: JP5 ON ならモニタ側にも行末コードをローカルエコー */
+                if (config_get_local_echo()) {
+                    uart_monitor_send_line_ending();
+                }
             } else {
                 uint8_t const ascii = keymap_convert(usage, modifier);
                 if (ascii != 0) {
                     uart_out_putc(ascii);
                     led_set_state(LED_STATE_TX);
                     keyrepeat_register(ascii);  /* Phase 6: キーリピート対象として登録 */
+                    /* Phase 9: JP5 ON ならモニタ側にもローカルエコー */
+                    if (config_get_local_echo()) {
+                        uart_monitor_putc(ascii);
+                    }
                 }
             }
         }
@@ -299,7 +314,7 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance,
 
     /* 受信チェーン継続: 次のレポート受信を要求 */
     if (!tuh_hid_receive_report(dev_addr, instance)) {
-        uart_out_puts("[USB] Failed to re-request HID report\r\n");
+        uart_monitor_puts("[USB] Failed to re-request HID report\r\n");
         /* TODO (Phase 7): tuh_hid_receive_report() 失敗時の再試行ロジックを実装する */
     }
 }

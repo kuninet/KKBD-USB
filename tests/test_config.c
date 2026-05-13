@@ -47,6 +47,21 @@ TEST(test_decode_line_ending_ignores_upper_bits) {
     EXPECT_EQ(LINE_ENDING_CR,   config_decode_line_ending(0xFF));  /* lower bits 0b11 (予約→CR) */
 }
 
+/* config_decode_local_echo のテスト */
+
+TEST(test_decode_local_echo_off) {
+    EXPECT_EQ(false, config_decode_local_echo(0));    /* JP5=OPEN（プルアップ反転後 0） */
+}
+
+TEST(test_decode_local_echo_on) {
+    EXPECT_EQ(true, config_decode_local_echo(1));     /* JP5=SHORT（プルアップ反転後 1） */
+}
+
+TEST(test_decode_local_echo_ignores_upper_bits) {
+    EXPECT_EQ(false, config_decode_local_echo(0xFE)); /* lower bit 0 → false */
+    EXPECT_EQ(true,  config_decode_local_echo(0xFF)); /* lower bit 1 → true */
+}
+
 int main(void) {
     RUN_TEST(test_decode_baudrate_9600);
     RUN_TEST(test_decode_baudrate_19200);
@@ -59,6 +74,10 @@ int main(void) {
     RUN_TEST(test_decode_line_ending_crlf);
     RUN_TEST(test_decode_line_ending_reserved_falls_back_to_cr);
     RUN_TEST(test_decode_line_ending_ignores_upper_bits);
+
+    RUN_TEST(test_decode_local_echo_off);
+    RUN_TEST(test_decode_local_echo_on);
+    RUN_TEST(test_decode_local_echo_ignores_upper_bits);
 
     TEST_SUMMARY();
     return 0;
