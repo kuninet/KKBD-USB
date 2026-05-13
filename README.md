@@ -4,9 +4,9 @@
 ![MCU](https://img.shields.io/badge/MCU-RP2040-blue)
 ![言語](https://img.shields.io/badge/言語-C%2FC%2B%2B-brightgreen)
 
-> **注意: 現在開発進行中のプロジェクトです。Phase 1〜6 完了、Phase 7 未着手。**
+> **注意: 現在開発進行中のプロジェクトです。Phase 1〜6 + Phase 9 完了、Phase 7 未着手。**
 >
-> **暫定稼働 OK**: Phase 1〜6 完了で「USB キーボード接続 → ASCII 変換 → UART 送信」の **メイン機能は実機検証済み・通常用途で使用可能** です。Phase 7（異常系処理: tuh_init 失敗時セーフモード、受信失敗リトライ、Phantom 詳細対応、複数キーボード等）と Phase 8（24 時間連続動作・複数キーボード互換性総合検証）が未実装のため正式リリースではありませんが、一般的な USB キーボードを SBC へ接続する用途では問題なく動作します。
+> **暫定稼働 OK**: Phase 1〜6 完了で「USB キーボード接続 → ASCII 変換 → UART 送信」の **メイン機能は実機検証済み・通常用途で使用可能** です。Phase 7（異常系処理: tuh_init 失敗時セーフモード、受信失敗リトライ、Phantom 詳細対応、複数キーボード等）と Phase 8（24 時間連続動作・複数キーボード互換性総合検証）が未実装のため正式リリースではありませんが、一般的な USB キーボードを SBC へ接続する用途では問題なく動作します。Phase 9 でモニタ機能（UART1 経由で SBC 応答を PC で確認可能）が追加されました。
 
 ## 概要
 
@@ -18,7 +18,7 @@ Raspberry Pi Pico（RP2040）の USB ホスト機能を利用し、USB キーボ
 
 > **重要: 本ボードは「USB キーボード → UART 単方向送信」専用のキーボードインターフェース代替ボードです。**
 >
-> - **送信のみ**: USB キーボードのキー入力を ASCII 化して UART で送信します。
+> - **送信のみ**: USB キーボードのキー入力を ASCII 化して UART で送信します。SBC 応答の **UART1 経由でのモニタ機能** は Phase 9 で追加されましたが、これは開発者向けのデバッグ用途であり、SBC のターミナル端末として動作するわけではありません。
 > - **受信・表示機能なし**: SBC からの UART 応答を読み取って画面に表示する機能はありません（シリアルターミナルではありません）。
 > - **想定構成**: SBC 側で VRAM 付きビデオボード等の独立した表示系統を用意することを前提とします。本ボードは「PC 側のキーボードを使ったターミナル接続」の代わりに「SBC スタンドアロン化のためのキーボード単独入力」を提供します。
 > - **対象用途**: SBC6800 / KZ80 など、「キーボード入力 + 別系統の文字表示（VRAM ボード等）」で構成されるレトロ SBC のスタンドアロン化。
@@ -32,6 +32,8 @@ Raspberry Pi Pico（RP2040）の USB ホスト機能を利用し、USB キーボ
 ## 主な機能
 
 - USB キーボードの入力を UART 信号に変換して出力
+- SBC からの UART 応答を別チャネル（UART1）経由で PC ターミナルでモニタ可能（Phase 9）
+- キー入力のローカルエコーをジャンパー JP5 で ON/OFF 選択（Phase 9）
 - ボーレートをジャンパーピンで選択可能（9600 / 19200 / 38400 / 115200 bps）
 - 行末コードをジャンパーピンで選択可能（CRLF / CR / LF）
 - Raspberry Pi Pico（RP2040）の内蔵 USB ホスト機能（TinyUSB）を使用
@@ -48,12 +50,13 @@ Raspberry Pi Pico（RP2040）の USB ホスト機能を利用し、USB キーボ
 | Phase 6 | 行末コード・キーリピート・LED | 完了（実機検証済み） |
 | Phase 7 | 異常系処理 | 未着手 |
 | Phase 8 | 実機検証 | 未着手 |
+| Phase 9 | UARTモニタ + ログ振替 + ローカルエコー | 完了（実機検証待ち） |
 
 詳細は [`docs/design/実装計画.md`](docs/design/実装計画.md) を参照してください。
 
 ### 将来計画（検討中）
 
-- [SBC 応答モニタ機能の検討（Plan A: UART1 パススルー / Plan B: スタンドアロン端末化）](docs/design/将来計画_応答モニタ_概要.md) — 検討中・未着手、Issue [#27](https://github.com/kuninet/KKBD-USB/issues/27) で追跡
+- [SBC 応答モニタ機能の検討（Plan A: UART1 パススルー / Plan B: スタンドアロン端末化）](docs/design/将来計画_応答モニタ_概要.md) — Phase 9 で基本的な UART1 モニタ（デバッグ用）を実装済み。フル端末化（Plan B）等の発展は引き続き検討中、Issue [#27](https://github.com/kuninet/KKBD-USB/issues/27) で追跡
 - [5V SBC（MC6850 / 8251）接続のための電圧レベル変換ガイド](docs/design/将来計画_5V_SBC接続_電圧レベル変換.md) — 検討中・未着手、Issue [#29](https://github.com/kuninet/KKBD-USB/issues/29) で追跡
 
 ## ユーザー向けマニュアル
@@ -87,11 +90,14 @@ KKBD-USB の組み立て・ビルド・使い方の詳細手順は [`docs/manual
 | 機能 | GPIO 番号 | Pico 物理ピン番号 | 方向 | 内部設定 | 備考 |
 |------|----------|-------------------|------|---------|------|
 | UART0 TX | GPIO 0 | 1 | 出力 | UART 機能 | SBC の RX へ接続 |
+| UART0 RX | GPIO 1 | 2 | 入力 | UART 機能 | SBC の TX から受信（応答モニタ用、Phase 9） |
 | GND | - | 3, 8, 13, 18, 23, 28, 38 | - | - | UART・ジャンパー共通グラウンド |
+| UART1 TX | GPIO 4 | 6 | 出力 | UART 機能 | USB-Serial 変換器の RX へ（モニタ出力、Phase 9） |
 | JP1（行末コード bit0） | GPIO 10 | 14 | 入力 | 内蔵プルアップ | OPEN=未接続 / SHORT=GND ピンへ接続 |
 | JP2（行末コード bit1） | GPIO 11 | 15 | 入力 | 内蔵プルアップ | 同上 |
 | JP3（ボーレート bit0） | GPIO 12 | 16 | 入力 | 内蔵プルアップ | 同上 |
 | JP4（ボーレート bit1） | GPIO 13 | 17 | 入力 | 内蔵プルアップ | 同上 |
+| JP5（ローカルエコー） | GPIO 14 | 19 | 入力 | 内蔵プルアップ | OPEN=エコー OFF / SHORT=エコー ON（Phase 9） |
 | LED（ステータス表示） | GPIO 25 | 内蔵 | 出力 | - | Pico オンボード LED |
 | USB | 内蔵 | Micro-B コネクタ | - | USB ホスト | USB OTG アダプタ経由でキーボード接続 |
 
@@ -118,6 +124,15 @@ KKBD-USB の組み立て・ビルド・使い方の詳細手順は [`docs/manual
 | SHORT | OPEN | 19200 bps |
 | OPEN | SHORT | 38400 bps |
 | SHORT | SHORT | 115200 bps |
+
+#### ローカルエコー選択（JP5 = GPIO 14、Phase 9）
+
+| JP5 | ローカルエコー | 動作 |
+|-----|---------------|------|
+| OPEN | OFF（デフォルト） | キー入力は UART0 にのみ送信、UART1 には SBC 応答のみ |
+| SHORT | ON | キー入力は UART0 と UART1 の両方に送信（モニタ側でも自分のキー入力を確認可能） |
+
+> Phase 9 で追加。出荷デフォルトは OPEN（エコー OFF）。デバッグ時など、PC ターミナルで「自分が打ったキー + SBC 応答」を両方確認したい場合に SHORT にする。
 
 ## ディレクトリ構成
 
@@ -150,6 +165,7 @@ KKBD-USB/
 │   ├── usb_host.c/h            # USBホスト処理
 │   ├── keymap.c/h              # HID Usage ID → ASCII
 │   ├── uart_out.c/h            # UART送信、行末コード
+│   ├── uart_monitor.c/h        # UARTモニタ（UART1経由SBC応答転送、Phase 9）
 │   ├── config.c/h              # ジャンパー読取
 │   ├── led.c/h                 # LEDインジケータ
 │   └── keyrepeat.c/h           # キーリピート
@@ -189,6 +205,7 @@ export PICO_SDK_PATH=$HOME/pico-sdk
 - Phase 4: [`docs/tests/phase4_実機検証手順.md`](docs/tests/phase4_実機検証手順.md)
 - Phase 5: [`docs/tests/phase5_実機検証手順.md`](docs/tests/phase5_実機検証手順.md)
 - Phase 6: [`docs/tests/phase6_実機検証手順.md`](docs/tests/phase6_実機検証手順.md)
+- Phase 9: [`docs/tests/phase9_実機検証手順.md`](docs/tests/phase9_実機検証手順.md) — 実機検証待ち
 
 トラブルシューティングは [`docs/manual/07_トラブルシューティング.md`](docs/manual/07_トラブルシューティング.md) に統合・カテゴリ化されています。
 

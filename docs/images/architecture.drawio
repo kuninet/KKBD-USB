@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1100" math="0" shadow="0">
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1100" math="0" shadow="0">
   <root>
     <mxCell id="0" />
     <mxCell id="1" parent="0" />
 
     <!-- タイトル -->
     <mxCell id="100" value="KKBD-USB アーキテクチャ図（レイヤ構成）" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;" vertex="1" parent="1">
-      <mxGeometry x="80" y="20" width="1040" height="40" as="geometry" />
+      <mxGeometry x="80" y="20" width="1240" height="40" as="geometry" />
     </mxCell>
 
     <!-- ========== アプリケーション層 ========== -->
-    <!-- 層の外枠: y=70, height=170 → 下端 y=240 。タイトルなし（左上ラベルで別途配置） -->
+    <!-- 層の外枠: y=70, height=170 → 下端 y=240。幅を 1240px（x=80〜1320）に拡張 -->
     <mxCell id="200" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;arcSize=3;strokeWidth=2;" vertex="1" parent="1">
-      <mxGeometry x="80" y="70" width="1040" height="170" as="geometry" />
+      <mxGeometry x="80" y="70" width="1240" height="170" as="geometry" />
     </mxCell>
     <!-- アプリケーション層タイトル（左上小ラベル） -->
     <mxCell id="201" value="アプリケーション層" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=13;fontStyle=1;fontColor=#23527c;" vertex="1" parent="1">
       <mxGeometry x="90" y="76" width="160" height="22" as="geometry" />
     </mxCell>
 
-    <!-- main モジュール: x=100, y=120, w=120, h=80 → 下端 y=200 -->
+    <!-- main モジュール: x=100, y=120, w=120, h=80 -->
     <mxCell id="210" value="&lt;b&gt;main&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;エントリポイント&lt;br&gt;メインループ&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b3d7f5;strokeColor=#6c8ebf;fontSize=12;verticalAlign=middle;arcSize=5;" vertex="1" parent="1">
       <mxGeometry x="100" y="120" width="120" height="80" as="geometry" />
     </mxCell>
@@ -54,58 +54,60 @@
       <mxGeometry x="1060" y="120" width="120" height="80" as="geometry" />
     </mxCell>
 
+    <!-- uart_monitor モジュール（Phase 9 追加）: x=1220, y=120 -->
+    <mxCell id="280" value="&lt;b&gt;uart_monitor&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;UART1 モニタ送信&lt;br&gt;SBC 応答パススルー&lt;br&gt;ログ出力 API&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#cfe2f3;strokeColor=#6c8ebf;fontSize=12;verticalAlign=middle;arcSize=5;strokeWidth=2;" vertex="1" parent="1">
+      <mxGeometry x="1220" y="110" width="120" height="100" as="geometry" />
+    </mxCell>
+
     <!-- ========== ミドルウェア層 ========== -->
-    <!-- 層の外枠: y=310, height=120 → 下端 y=430 -->
-    <!-- アプリ層下端 y=240, ミドルウェア上端 y=310 → 間隔 70px（矢印通路） -->
+    <!-- 層の外枠: y=310, height=120 → 下端 y=430。幅 1240px に拡張 -->
     <mxCell id="300" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;arcSize=3;strokeWidth=2;" vertex="1" parent="1">
-      <mxGeometry x="80" y="310" width="1040" height="120" as="geometry" />
+      <mxGeometry x="80" y="310" width="1240" height="120" as="geometry" />
     </mxCell>
     <!-- ミドルウェア層タイトル（左上小ラベル） -->
     <mxCell id="301" value="ミドルウェア層" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=13;fontStyle=1;fontColor=#336633;" vertex="1" parent="1">
       <mxGeometry x="90" y="316" width="140" height="22" as="geometry" />
     </mxCell>
 
-    <!-- TinyUSB Host: x=930, y=350 → 右寄せ。usb_host(x=1060-1180)の真下に近い位置 -->
+    <!-- TinyUSB Host: x=930, y=350 -->
     <mxCell id="310" value="&lt;b&gt;TinyUSB Host&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;(HID Class)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a8d5a0;strokeColor=#82b366;fontSize=12;verticalAlign=middle;arcSize=5;" vertex="1" parent="1">
       <mxGeometry x="950" y="350" width="150" height="60" as="geometry" />
     </mxCell>
 
     <!-- ========== HAL層 ========== -->
-    <!-- 層の外枠: y=510, height=130 → 下端 y=640 -->
-    <!-- ミドルウェア層下端 y=430, HAL層上端 y=510 → 間隔 80px（矢印通路） -->
+    <!-- 層の外枠: y=510, height=130 → 下端 y=640。幅 1240px に拡張 -->
     <mxCell id="400" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;arcSize=3;strokeWidth=2;fontColor=#333333;" vertex="1" parent="1">
-      <mxGeometry x="80" y="510" width="1040" height="130" as="geometry" />
+      <mxGeometry x="80" y="510" width="1240" height="130" as="geometry" />
     </mxCell>
     <!-- HAL層タイトル（左上小ラベル） -->
     <mxCell id="401" value="HAL層（Pico SDK）" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=13;fontStyle=1;fontColor=#444444;" vertex="1" parent="1">
       <mxGeometry x="90" y="516" width="170" height="22" as="geometry" />
     </mxCell>
 
-    <!-- Pico SDK GPIO: x=110, y=555 → 左寄せ（config/led から接続） -->
+    <!-- Pico SDK GPIO: x=110, y=555 -->
     <mxCell id="410" value="&lt;b&gt;Pico SDK&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;GPIO&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0e0e0;strokeColor=#666666;fontSize=12;verticalAlign=middle;arcSize=5;fontColor=#333333;" vertex="1" parent="1">
       <mxGeometry x="110" y="555" width="150" height="60" as="geometry" />
     </mxCell>
 
-    <!-- Pico SDK UART: x=380, y=555 → uart_out(x=900-1020)の左側の一般領域 -->
+    <!-- Pico SDK UART: x=380, y=555 -->
     <mxCell id="420" value="&lt;b&gt;Pico SDK&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;UART&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0e0e0;strokeColor=#666666;fontSize=12;verticalAlign=middle;arcSize=5;fontColor=#333333;" vertex="1" parent="1">
       <mxGeometry x="380" y="555" width="150" height="60" as="geometry" />
     </mxCell>
 
-    <!-- Pico SDK USB: x=590, y=555 → TinyUSB Host(x=950-1100)の左側の領域 -->
+    <!-- Pico SDK USB: x=590, y=555 -->
     <mxCell id="430" value="&lt;b&gt;Pico SDK&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;USB&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0e0e0;strokeColor=#666666;fontSize=12;verticalAlign=middle;arcSize=5;fontColor=#333333;" vertex="1" parent="1">
       <mxGeometry x="590" y="555" width="150" height="60" as="geometry" />
     </mxCell>
 
-    <!-- Pico SDK Timer: x=800, y=555 → keyrepeat(x=420-540)からの接続先 -->
+    <!-- Pico SDK Timer: x=800, y=555 -->
     <mxCell id="440" value="&lt;b&gt;Pico SDK&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;Timer&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0e0e0;strokeColor=#666666;fontSize=12;verticalAlign=middle;arcSize=5;fontColor=#333333;" vertex="1" parent="1">
       <mxGeometry x="800" y="555" width="150" height="60" as="geometry" />
     </mxCell>
 
     <!-- ========== ハードウェア層 ========== -->
-    <!-- 層の外枠: y=730, height=120 → 下端 y=850 -->
-    <!-- HAL層下端 y=640, ハードウェア層上端 y=730 → 間隔 90px（矢印通路） -->
+    <!-- 層の外枠: y=730, height=120 → 下端 y=850。幅 1240px に拡張 -->
     <mxCell id="500" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;arcSize=3;strokeWidth=2;" vertex="1" parent="1">
-      <mxGeometry x="80" y="730" width="1040" height="120" as="geometry" />
+      <mxGeometry x="80" y="730" width="1240" height="120" as="geometry" />
     </mxCell>
     <!-- ハードウェア層タイトル（左上小ラベル） -->
     <mxCell id="501" value="ハードウェア層（参考）" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=13;fontStyle=1;fontColor=#9a6a00;" vertex="1" parent="1">
@@ -118,7 +120,7 @@
     </mxCell>
 
     <!-- RP2040 UART: x=380, y=770 -->
-    <mxCell id="520" value="&lt;b&gt;RP2040&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;UART&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcc99;strokeColor=#d6b656;fontSize=12;verticalAlign=middle;arcSize=5;" vertex="1" parent="1">
+    <mxCell id="520" value="&lt;b&gt;RP2040&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;UART0/1&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcc99;strokeColor=#d6b656;fontSize=12;verticalAlign=middle;arcSize=5;" vertex="1" parent="1">
       <mxGeometry x="380" y="770" width="150" height="60" as="geometry" />
     </mxCell>
 
@@ -135,24 +137,24 @@
     <!-- ========== 接続矢印: main → 各モジュール（アプリ層内） ========== -->
     <!--
       各モジュール箱の座標:
-        main:      x=100-220, y=120-200  中央(160, 160)
-        keymap:    x=260-380, y=120-200  中央(320, 160)
-        keyrepeat: x=420-540, y=120-200  中央(480, 160)
-        led:       x=580-700, y=120-200  中央(640, 160)
-        config:    x=740-860, y=120-200  中央(800, 160)
-        uart_out:  x=900-1020, y=120-200 中央(960, 160)
-        usb_host:  x=1060-1180, y=120-200 中央(1120, 160)
-      アプリ層下余白: y=200（箱下端）〜 y=240（層下端）→ 余白40px
-      矢印は箱の下端(y=200)から出て、層の下余白(y=215, 220, 225, 230)を水平に通り、各箱の下端に入る
-      各矢印を異なるy座標で通すことで矢印同士の重なりも防ぐ
+        main:         x=100-220,  y=120-200  中央(160, 160)
+        keymap:       x=260-380,  y=120-200  中央(320, 160)
+        keyrepeat:    x=420-540,  y=120-200  中央(480, 160)
+        led:          x=580-700,  y=120-200  中央(640, 160)
+        config:       x=740-860,  y=120-200  中央(800, 160)
+        uart_out:     x=900-1020, y=120-200  中央(960, 160)
+        usb_host:     x=1060-1180,y=120-200  中央(1120, 160)
+        uart_monitor: x=1220-1340,y=110-210  中央(1280, 160)
+      アプリ層下余白: y=210（uart_monitor 下端）〜 y=240（層下端）→ 余白30px
+      矢印は main 下端から出て、層の下余白を水平に通り各箱の下端に入る
     -->
 
-    <!-- main → keymap: 隣接しているため右端→左端の水平接続（問題なし） -->
+    <!-- main → keymap: 隣接しているため右端→左端の水平接続 -->
     <mxCell id="601" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;endArrow=block;endFill=1;strokeWidth=1.5;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="210" target="220">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
 
-    <!-- main → keyrepeat: main下端(y=200) → y=217(層下余白) → keyrepeat下端(y=200) -->
+    <!-- main → keyrepeat: main下端(y=200) → y=217 → keyrepeat下端(y=200) -->
     <mxCell id="602" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;endArrow=block;endFill=1;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="210" target="230">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
@@ -162,7 +164,7 @@
       </mxGeometry>
     </mxCell>
 
-    <!-- main → led: main下端(y=200) → y=222(層下余白) → led下端(y=200) -->
+    <!-- main → led: main下端(y=200) → y=222 → led下端(y=200) -->
     <mxCell id="603" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;endArrow=block;endFill=1;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="210" target="240">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
@@ -172,7 +174,7 @@
       </mxGeometry>
     </mxCell>
 
-    <!-- main → config: main下端(y=200) → y=227(層下余白) → config下端(y=200) -->
+    <!-- main → config: main下端(y=200) → y=227 → config下端(y=200) -->
     <mxCell id="604" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;endArrow=block;endFill=1;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="210" target="250">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
@@ -182,7 +184,7 @@
       </mxGeometry>
     </mxCell>
 
-    <!-- main → uart_out: main下端(y=200) → y=232(層下余白) → uart_out下端(y=200) -->
+    <!-- main → uart_out: main下端(y=200) → y=232 → uart_out下端(y=200) -->
     <mxCell id="605" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;endArrow=block;endFill=1;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="210" target="260">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
@@ -192,7 +194,7 @@
       </mxGeometry>
     </mxCell>
 
-    <!-- main → usb_host: main下端(y=200) → y=237(層下余白) → usb_host下端(y=200) -->
+    <!-- main → usb_host: main下端(y=200) → y=237 → usb_host下端(y=200) -->
     <mxCell id="606" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;endArrow=block;endFill=1;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="210" target="270">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
@@ -202,20 +204,33 @@
       </mxGeometry>
     </mxCell>
 
+    <!-- main → uart_monitor（Phase 9）:
+         main下端(y=200) → y=243 → uart_monitor下端(y=210)
+         矢印は既存矢印より低い y=243 を通ることで重なりを回避 -->
+    <mxCell id="607" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1e88e5;endArrow=block;endFill=1;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="210" target="280">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="160" y="243" />
+          <mxPoint x="1280" y="243" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- usb_host → uart_monitor（ログ送信 + ローカルエコー、Phase 9）:
+         usb_host 右端(x=1180, y=160) → uart_monitor 左端(x=1220, y=160)
+         隣接しているため水平接続。usb_host 右端 → uart_monitor 左端 -->
+    <mxCell id="608" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;ログ / エコー&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1e88e5;fontColor=#1e88e5;fontStyle=2;fontSize=10;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;strokeWidth=1.5;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="270" target="280">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
     <!-- ========== 接続矢印: アプリ層 → ミドルウェア層 ========== -->
     <!-- usb_host → TinyUSB Host -->
-    <!-- usb_host: x=1060-1180, 中央x=1120, 下端y=200 -->
-    <!-- TinyUSB: x=950-1100, 中央x=1025, 上端y=350 -->
-    <!-- 層間余白 y=240〜310、矢印はy=275付近を通過 -->
     <mxCell id="610" value="呼び出し" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;fontColor=#82b366;fontStyle=2;fontSize=10;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="270" target="310">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
 
     <!-- ========== 接続矢印: ミドルウェア層 → HAL層 ========== -->
     <!-- TinyUSB Host → Pico SDK USB -->
-    <!-- TinyUSB: x=950-1100, 中央x=1025, 下端y=410 -->
-    <!-- Pico SDK USB: x=590-740, 中央x=665, 上端y=555 -->
-    <!-- 層間余白 y=430〜510。右側から左に折れて接続する。 -->
     <mxCell id="620" value="呼び出し" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontColor=#666666;fontStyle=2;fontSize=10;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="310" target="430">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
@@ -226,76 +241,79 @@
     </mxCell>
 
     <!-- ========== 接続矢印: アプリ層 → HAL層（直接） ========== -->
-    <!-- 層間余白: アプリ層下端 y=240、ミドルウェア上端 y=310、ミドルウェア下端 y=430、HAL上端 y=510 -->
-    <!-- アプリ→HAL直接矢印はミドルウェア層の「右端外側」（x=1130付近）を迂回させる -->
+    <!--
+      アプリ→HAL直接矢印は右端外側（x=1350付近）を迂回させる
+      ミドルウェア層右端は x=1320。迂回は x=1360 以上を通す。
+    -->
 
-    <!-- uart_out → Pico SDK UART -->
-    <!-- uart_out: x=900-1020, 中央x=960, 下端y=200 -->
-    <!-- Pico SDK UART: x=380-530, 中央x=455, 上端y=555 -->
-    <!-- 迂回ルート: uart_out下端 → x=1140(ミドルウェア右外側) → y=470(ミドルウェア下端外) → Pico SDK UART上端 -->
+    <!-- uart_out → Pico SDK UART:
+         uart_out下端(x=960, y=200) → x=1360(右外側) → y=490(HAL上) → Pico SDK UART上端(x=455, y=555) -->
     <mxCell id="630" value="呼び出し" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontColor=#666666;fontStyle=2;fontSize=10;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="260" target="420">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
           <mxPoint x="960" y="270" />
-          <mxPoint x="1150" y="270" />
-          <mxPoint x="1150" y="490" />
+          <mxPoint x="1360" y="270" />
+          <mxPoint x="1360" y="490" />
           <mxPoint x="455" y="490" />
         </Array>
       </mxGeometry>
     </mxCell>
 
-    <!-- config → Pico SDK GPIO -->
-    <!-- config: x=740-860, 中央x=800, 下端y=200 -->
-    <!-- Pico SDK GPIO: x=110-260, 中央x=185, 上端y=555 -->
-    <!-- 迂回ルート: config下端 → x=1155(ミドルウェア右外側、少しずらす) → y=480 → Pico SDK GPIO上端 -->
+    <!-- config → Pico SDK GPIO:
+         config下端(x=800, y=200) → x=1365 → y=480 → Pico SDK GPIO上端(x=185, y=555) -->
     <mxCell id="631" value="呼び出し" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontColor=#666666;fontStyle=2;fontSize=10;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="250" target="410">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
           <mxPoint x="800" y="260" />
-          <mxPoint x="1160" y="260" />
-          <mxPoint x="1160" y="500" />
+          <mxPoint x="1365" y="260" />
+          <mxPoint x="1365" y="500" />
           <mxPoint x="185" y="500" />
         </Array>
       </mxGeometry>
     </mxCell>
 
-    <!-- led → Pico SDK GPIO -->
-    <!-- led: x=580-700, 中央x=640, 下端y=200 -->
-    <!-- Pico SDK GPIO: x=110-260, 中央x=185, 上端y=555 -->
-    <!-- 迂回ルート: led下端 → x=1165(ミドルウェア右外側) → y=510 → Pico SDK GPIO上端 -->
+    <!-- led → Pico SDK GPIO:
+         led下端(x=640, y=200) → x=1370 → y=510 → Pico SDK GPIO上端(x=185, y=555) -->
     <mxCell id="632" value="呼び出し" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontColor=#666666;fontStyle=2;fontSize=10;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="240" target="410">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
           <mxPoint x="640" y="250" />
-          <mxPoint x="1170" y="250" />
-          <mxPoint x="1170" y="510" />
+          <mxPoint x="1370" y="250" />
+          <mxPoint x="1370" y="510" />
           <mxPoint x="185" y="510" />
         </Array>
       </mxGeometry>
     </mxCell>
 
-    <!-- keyrepeat → Pico SDK Timer -->
-    <!-- keyrepeat: x=420-540, 中央x=480, 下端y=200 -->
-    <!-- Pico SDK Timer: x=800-950, 中央x=875, 上端y=555 -->
-    <!-- 迂回ルート: keyrepeat下端 → x=1175(ミドルウェア右外側) → y=480 → Pico SDK Timer上端 -->
+    <!-- keyrepeat → Pico SDK Timer:
+         keyrepeat下端(x=480, y=200) → x=1375 → y=480 → Pico SDK Timer上端(x=875, y=555) -->
     <mxCell id="633" value="呼び出し" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontColor=#666666;fontStyle=2;fontSize=10;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="230" target="440">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
           <mxPoint x="480" y="240" />
-          <mxPoint x="1180" y="240" />
-          <mxPoint x="1180" y="520" />
+          <mxPoint x="1375" y="240" />
+          <mxPoint x="1375" y="520" />
           <mxPoint x="875" y="520" />
         </Array>
       </mxGeometry>
     </mxCell>
 
+    <!-- uart_monitor → Pico SDK UART（Phase 9）:
+         uart_monitor下端(x=1280, y=210) → 真下に下り → x=1380(右外側) → y=480 → Pico SDK UART上端(x=455, y=555)
+         既存の矢印と重ならないよう x=1380 を通る -->
+    <mxCell id="634" value="呼び出し" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1e88e5;fontColor=#1e88e5;fontStyle=2;fontSize=10;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;strokeWidth=2;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="280" target="420">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1380" y="210" />
+          <mxPoint x="1380" y="480" />
+          <mxPoint x="455" y="480" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
     <!-- ========== 接続矢印: HAL層 → ハードウェア層 ========== -->
-    <!-- 各矢印は箱の下端から垂直に下り、ハードウェア層の箱の上端に入る -->
-    <!-- HAL層下端 y=640、ハードウェア層上端 y=730 → 間隔 90px、矢印が通るスペース十分 -->
 
     <!-- Pico SDK GPIO → RP2040 GPIO -->
-    <!-- Pico SDK GPIO: x=110-260, 中央x=185, 下端y=615 -->
-    <!-- RP2040 GPIO: x=590-740, 中央x=665, 上端y=770 -->
     <mxCell id="640" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;endArrow=block;endFill=1;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="410" target="530">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
@@ -305,16 +323,12 @@
       </mxGeometry>
     </mxCell>
 
-    <!-- Pico SDK UART → RP2040 UART -->
-    <!-- Pico SDK UART: x=380-530, 中央x=455, 下端y=615 -->
-    <!-- RP2040 UART: x=380-530, 中央x=455, 上端y=770 -->
+    <!-- Pico SDK UART → RP2040 UART0/1 -->
     <mxCell id="641" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;endArrow=block;endFill=1;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="420" target="520">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
 
     <!-- Pico SDK USB → RP2040 USB Host Controller -->
-    <!-- Pico SDK USB: x=590-740, 中央x=665, 下端y=615 -->
-    <!-- RP2040 USB: x=110-280, 中央x=195, 上端y=770 -->
     <mxCell id="642" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;endArrow=block;endFill=1;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="430" target="510">
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
@@ -325,15 +339,13 @@
     </mxCell>
 
     <!-- Pico SDK Timer → RP2040 Timer -->
-    <!-- Pico SDK Timer: x=800-950, 中央x=875, 下端y=615 -->
-    <!-- RP2040 Timer: x=800-950, 中央x=875, 上端y=770 -->
     <mxCell id="643" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;endArrow=block;endFill=1;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="440" target="540">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
 
-    <!-- ========== 凡例（右下の余白に配置: ハードウェア層の右下、矢印が通らない位置） ========== -->
+    <!-- ========== 凡例（ハードウェア層の下） ========== -->
     <mxCell id="900" value="凡例" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=12;fontStyle=1;verticalAlign=top;arcSize=5;" vertex="1" parent="1">
-      <mxGeometry x="80" y="880" width="1040" height="70" as="geometry" />
+      <mxGeometry x="80" y="880" width="1240" height="90" as="geometry" />
     </mxCell>
     <mxCell id="901" value="■ 青系: アプリケーション層" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontColor=#6c8ebf;" vertex="1" parent="1">
       <mxGeometry x="100" y="895" width="220" height="20" as="geometry" />
@@ -350,8 +362,11 @@
     <mxCell id="905" value="━▶ 矢印 = 依存関係（呼び出し方向）" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontColor=#333333;" vertex="1" parent="1">
       <mxGeometry x="600" y="895" width="340" height="20" as="geometry" />
     </mxCell>
+    <mxCell id="907" value="━▶ 青太矢印 = Phase 9 追加（uart_monitor 関連）" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontColor=#1e88e5;" vertex="1" parent="1">
+      <mxGeometry x="600" y="920" width="380" height="20" as="geometry" />
+    </mxCell>
     <mxCell id="906" value="※ 本図はアプリケーション層内のモジュール間依存（usb_host → keymap, keyrepeat, uart_out 等）は省略。main からの呼び出し依存を主に示す。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=10;fontColor=#666666;" vertex="1" parent="1">
-      <mxGeometry x="80" y="960" width="1040" height="30" as="geometry" />
+      <mxGeometry x="80" y="975" width="1240" height="30" as="geometry" />
     </mxCell>
 
   </root>

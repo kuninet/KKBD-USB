@@ -3,6 +3,7 @@ add_executable(kkbd_usb
     usb_host.c
     keymap.c
     uart_out.c
+    uart_monitor.c
     config.c
     led.c
     keyrepeat.c

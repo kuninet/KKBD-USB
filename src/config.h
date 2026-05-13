@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef enum {
     LINE_ENDING_CR   = 0,  /* JP1=OPEN, JP2=OPEN  → CR (0x0D) */
@@ -16,9 +17,18 @@ typedef enum {
 #define JP3_GPIO    12   /* ボーレート bit0 */
 #define JP4_GPIO    13   /* ボーレート bit1 */
 
+/* JP5: ローカルエコー（モニタ側） bit */
+#define JP5_GPIO    14   /* OPEN=エコー OFF / SHORT=エコー ON */
+
 void config_init(void);
 uint32_t config_get_baudrate(void);
 line_ending_t config_get_line_ending(void);
+
+/**
+ * @brief JP5 の状態に応じてローカルエコー有効/無効を返す
+ * @return true: エコー有効 (JP5=SHORT) / false: 無効 (JP5=OPEN)
+ */
+bool config_get_local_echo(void);
 
 /* ----- ホスト側ユニットテスト用に公開する純粋関数（GPIO非依存） ----- */
 
@@ -35,5 +45,12 @@ uint32_t config_decode_baudrate(uint8_t bits);
  * @return line_ending_t（予約パターン 0b11 は LINE_ENDING_CR にフォールバック）
  */
 line_ending_t config_decode_line_ending(uint8_t bits);
+
+/**
+ * @brief 1 ビットからローカルエコー有無を解決する純粋関数（テスト用）
+ * @param bit JP5 の論理ビット（SHORT=1）
+ * @return true: エコー ON / false: OFF
+ */
+bool config_decode_local_echo(uint8_t bit);
 
 #endif /* CONFIG_H */

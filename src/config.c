@@ -36,12 +36,18 @@ line_ending_t config_decode_line_ending(uint8_t bits) {
     }
 }
 
+bool config_decode_local_echo(uint8_t bit) {
+    /* bit0 が 1（SHORT）なら エコー ON、0（OPEN）なら エコー OFF */
+    return (bit & 0x01) ? true : false;
+}
+
 #ifndef KKBD_HOST_TEST
 
 /* GPIO直接操作する関数とstatic変数はSDKビルド時のみ */
 
 static uint32_t      s_baudrate    = 9600;
 static line_ending_t s_line_ending = LINE_ENDING_CR;
+static bool          s_local_echo  = false;
 
 /* GPIO 値（プルアップで OPEN=1, SHORT=0）を読み、論理ビット（SHORT=1）に反転 */
 static uint8_t read_jumper_bits(uint pin_low, uint pin_high) {
@@ -50,8 +56,13 @@ static uint8_t read_jumper_bits(uint pin_low, uint pin_high) {
     return (uint8_t)((bit1 << 1) | bit0);
 }
 
+/* 1 本のジャンパピンを読み、論理ビット（SHORT=1）に反転して返す */
+static uint8_t read_one_jumper_bit_(uint pin) {
+    return gpio_get(pin) ? 0U : 1U;  /* SHORT 時に 1 */
+}
+
 void config_init(void) {
-    const uint pins[] = { JP1_GPIO, JP2_GPIO, JP3_GPIO, JP4_GPIO };
+    const uint pins[] = { JP1_GPIO, JP2_GPIO, JP3_GPIO, JP4_GPIO, JP5_GPIO };
     for (size_t i = 0; i < sizeof(pins) / sizeof(pins[0]); i++) {
         gpio_init(pins[i]);
         gpio_set_dir(pins[i], GPIO_IN);
@@ -63,9 +74,11 @@ void config_init(void) {
 
     uint8_t br_bits = read_jumper_bits(JP3_GPIO, JP4_GPIO);
     uint8_t le_bits = read_jumper_bits(JP1_GPIO, JP2_GPIO);
+    uint8_t echo_bit = read_one_jumper_bit_(JP5_GPIO);
 
     s_baudrate    = config_decode_baudrate(br_bits);
     s_line_ending = config_decode_line_ending(le_bits);
+    s_local_echo  = config_decode_local_echo(echo_bit);
 }
 
 uint32_t config_get_baudrate(void) {
@@ -74,6 +87,10 @@ uint32_t config_get_baudrate(void) {
 
 line_ending_t config_get_line_ending(void) {
     return s_line_ending;
+}
+
+bool config_get_local_echo(void) {
+    return s_local_echo;
 }
 
 #endif /* KKBD_HOST_TEST */
